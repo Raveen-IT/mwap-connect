@@ -1,6 +1,6 @@
 
 /**
- * Validates an Indian mobile number (10 digits)
+ * Validates a 10-digit Indian mobile number
  */
 export const validateMobileNumber = (mobile: string): boolean => {
   const mobileRegex = /^[6-9]\d{9}$/;
@@ -8,17 +8,9 @@ export const validateMobileNumber = (mobile: string): boolean => {
 };
 
 /**
- * Validates an Aadhaar number (12 digits)
+ * Validates a 12-digit Aadhaar number
  */
 export const validateAadhaar = (aadhaar: string): boolean => {
   const aadhaarRegex = /^\d{12}$/;
   return aadhaarRegex.test(aadhaar);
-};
-
-/**
- * Simple email validation
- */
-export const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
 };

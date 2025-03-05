@@ -1,170 +1,286 @@
 
 import { Layout } from "@/components/layout/Layout";
-import { FileText, Users, MessageSquare, Shield, BookOpen, Building } from "lucide-react";
-import { CustomButton } from "@/components/ui/custom-button";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  FileText,
+  GraduationCap,
+  HeartPulse,
+  Home,
+  MessageSquare,
+  UserPlus,
+  Briefcase,
+  Users,
+  Handshake,
+  MessageCircle
+} from "lucide-react";
 
 const Services = () => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-mwap-700/30 to-mwap-900/30" />
-          <div className="h-full w-full bg-[url('https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80')] bg-cover bg-center opacity-30" />
-        </div>
-        <div className="relative z-10 section-container flex flex-col items-center justify-center min-h-[50vh] text-center">
-          <div className="animate-fade-up">
+      <section className="bg-accent py-16 md:py-24">
+        <div className="section-container">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Services</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive support for migrant workers across Tamil Nadu
+            <p className="text-lg md:text-xl text-muted-foreground mb-8">
+              Comprehensive support services designed specifically for migrant workers in Tamil Nadu
             </p>
+            <Button 
+              size="lg" 
+              onClick={() => navigate("/register")}
+            >
+              Register for Services
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Main Services Section */}
-      <section className="py-16">
+      {/* Core Services */}
+      <section className="py-16 md:py-24 bg-background">
         <div className="section-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <FileText className="h-12 w-12 text-primary" />,
-                title: "Documentation Assistance",
-                description: "We help workers obtain and process necessary documents including work permits, identification cards, and residence certificates.",
-                link: "/register"
-              },
-              {
-                icon: <Users className="h-12 w-12 text-primary" />,
-                title: "Registration & ID Generation",
-                description: "Quick registration process with verification and issuance of a unique worker ID for accessing various services and benefits.",
-                link: "/register"
-              },
-              {
-                icon: <MessageSquare className="h-12 w-12 text-primary" />,
-                title: "Information Chatbot",
-                description: "AI-powered chatbot that provides information about Tamil Nadu government schemes specifically designed for migrant workers.",
-                link: "/dashboard"
-              },
-              {
-                icon: <Shield className="h-12 w-12 text-primary" />,
-                title: "Legal Advisory",
-                description: "Basic legal guidance regarding worker rights, wage disputes, and harassment issues in the workplace.",
-                link: "/services"
-              },
-              {
-                icon: <BookOpen className="h-12 w-12 text-primary" />,
-                title: "Educational Resources",
-                description: "Access to information about skill development programs, language courses, and vocational training opportunities.",
-                link: "/services"
-              },
-              {
-                icon: <Building className="h-12 w-12 text-primary" />,
-                title: "Housing Support",
-                description: "Information about affordable housing options and temporary accommodation facilities for newly arrived workers.",
-                link: "/services"
-              }
-            ].map((service, index) => (
-              <div 
-                key={index} 
-                className="glass-effect rounded-xl p-8 h-full flex flex-col animate-fade-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="mb-4">{service.icon}</div>
-                <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
-                <p className="text-muted-foreground mb-5 flex-grow">{service.description}</p>
-                <CustomButton variant="outline" size="sm" asChild className="mt-auto self-start">
-                  <Link to={service.link}>Learn More</Link>
-                </CustomButton>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-16 bg-accent">
-        <div className="section-container">
-          <div className="text-center mb-16 animate-fade-up">
-            <h2 className="text-3xl font-bold mb-4">Our Process</h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              We've streamlined our service delivery to ensure migrant workers can quickly and easily access the support they need
-            </p>
-          </div>
-
-          <div className="relative">
-            {/* Timeline connector */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-primary/20 hidden md:block"></div>
-            
-            {/* Steps */}
-            <div className="space-y-12 relative">
-              {[
-                {
-                  number: "01",
-                  title: "Registration",
-                  description: "Complete a simple registration form with your personal details and work information."
-                },
-                {
-                  number: "02",
-                  title: "Verification",
-                  description: "Your Aadhaar number is verified through OTP to ensure security and prevent fraud."
-                },
-                {
-                  number: "03",
-                  title: "ID Generation",
-                  description: "A unique worker ID is generated that you can use to access all services on our platform."
-                },
-                {
-                  number: "04",
-                  title: "Profile Creation",
-                  description: "Your digital profile is created containing all your information for easy access."
-                },
-                {
-                  number: "05",
-                  title: "Service Access",
-                  description: "With your profile and ID, you can now access all services and support resources."
-                }
-              ].map((step, index) => (
-                <div 
-                  key={index}
-                  className="relative animate-fade-up" 
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className={`md:flex items-center ${index % 2 === 0 ? '' : 'md:flex-row-reverse'}`}>
-                    <div className="md:w-1/2 p-4 flex justify-center">
-                      <div className="glass-effect w-16 h-16 rounded-full flex items-center justify-center text-primary text-2xl font-bold z-10 relative">
-                        {step.number}
-                      </div>
-                    </div>
-                    <div className={`md:w-1/2 p-4 glass-effect rounded-xl ${index % 2 === 0 ? 'text-left' : 'text-right'}`}>
-                      <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                      <p className="text-muted-foreground">{step.description}</p>
-                    </div>
-                  </div>
+          <h2 className="text-3xl font-bold mb-12 text-center">Core Services</h2>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Service 1 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <UserPlus className="h-6 w-6 text-primary" />
                 </div>
-              ))}
+                <h3 className="text-xl font-bold mb-3">Worker Registration</h3>
+                <p className="text-muted-foreground mb-4">
+                  Secure registration with Aadhaar verification to create a unique worker ID and profile
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/register">Register Now</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Service 2 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Government Schemes</h3>
+                <p className="text-muted-foreground mb-4">
+                  Information and assistance with Tamil Nadu government welfare schemes for migrant workers
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/chatbot">Explore Schemes</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Service 3 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">AI Assistance</h3>
+                <p className="text-muted-foreground mb-4">
+                  24/7 chatbot support to answer questions about schemes, benefits, and services
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/chatbot">Chat Now</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Service 4 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <HeartPulse className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Healthcare Support</h3>
+                <p className="text-muted-foreground mb-4">
+                  Information on healthcare facilities, insurance schemes, and medical assistance
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/services">Learn More</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Service 5 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <GraduationCap className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Skill Development</h3>
+                <p className="text-muted-foreground mb-4">
+                  Training programs and resources to enhance job skills and employability
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/services">View Programs</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Service 6 */}
+            <div className="glass-effect rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <Home className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Housing Assistance</h3>
+                <p className="text-muted-foreground mb-4">
+                  Information on affordable housing options and rental assistance programs
+                </p>
+                <Button variant="outline" size="sm" className="mt-2">
+                  <Link to="/services">Find Housing</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Additional Services */}
+      <section className="py-16 md:py-24 bg-accent">
+        <div className="section-container">
+          <h2 className="text-3xl font-bold mb-12 text-center">Additional Support</h2>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="glass-effect p-8 rounded-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Briefcase className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Employment Opportunities</h3>
+                  <p className="text-muted-foreground mb-4">
+                    We connect registered workers with verified employers across various sectors in Tamil Nadu. Our platform helps match your skills with suitable job opportunities and ensures fair labor practices.
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Job listings across multiple sectors</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Verified employers and fair wage practices</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Resume building and interview preparation</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-effect p-8 rounded-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Community Support</h3>
+                  <p className="text-muted-foreground mb-4">
+                    We foster a sense of community among migrant workers through various initiatives. Our community programs help workers connect with others from similar backgrounds and access local support networks.
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Regional worker community groups</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Cultural events and celebrations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Peer support and mentoring</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-effect p-8 rounded-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Handshake className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Legal Assistance</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Our partners provide legal guidance and support for migrant workers facing workplace issues, documentation problems, or other legal challenges. We ensure workers understand their rights and have access to proper representation.
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Free legal consultations</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Documentation and paperwork assistance</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Workplace rights education</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="glass-effect p-8 rounded-xl">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Multilingual Support</h3>
+                  <p className="text-muted-foreground mb-4">
+                    We provide support in multiple languages to ensure all migrant workers can access our services regardless of language barriers. Our team includes speakers of several Indian languages to facilitate clear communication.
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Support in Hindi, Tamil, Telugu, Bengali, and more</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Translated resources and materials</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary">•</span>
+                      <span>Language classes for local integration</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-mwap-600 to-mwap-800 text-white">
-        <div className="section-container text-center">
-          <div className="max-w-3xl mx-auto animate-fade-up">
-            <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-            <p className="text-lg opacity-90 mb-8">
-              Join thousands of migrant workers who have already benefited from our services. 
-              Registration is quick, simple, and opens the door to numerous benefits.
+      <section className="py-16 md:py-24 bg-background">
+        <div className="section-container">
+          <div className="glass-effect p-10 md:p-16 rounded-2xl text-center max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Get Started?</h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Register today to access all our services and receive personalized assistance 
+              for your needs as a migrant worker in Tamil Nadu.
             </p>
-            <CustomButton 
+            <Button 
               variant="glass" 
               size="lg" 
-              className="bg-white/10 hover:bg-white/20"
-              asChild
+              className="px-8" 
+              onClick={() => navigate("/register")}
             >
-              <Link to="/register">Register Now</Link>
-            </CustomButton>
+              Register Now
+            </Button>
           </div>
         </div>
       </section>
