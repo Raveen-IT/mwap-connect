@@ -1,108 +1,156 @@
 
-import { Layout } from "@/components/layout/Layout";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, FileCheck, MessageSquare, CheckCircle } from "lucide-react";
+import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { CustomButton } from "@/components/ui/custom-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, CheckCircle, Users, FileText, HelpCircle } from "lucide-react";
 
 const Home = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-mwap-700/20 to-mwap-900/20" />
-          <div className="h-full w-full bg-[url('https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center opacity-20" />
-        </div>
-        <div className="relative z-10 section-container flex flex-col items-center justify-center min-h-[90vh] text-center">
-          <div className="animate-fade-up">
-            <div className="inline-block px-3 py-1 mb-6 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              Empowering Migrant Workers
+      <section className="relative bg-gradient-to-b from-primary/5 to-background pt-24 pb-20">
+        <div className="section-container">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-8 items-center">
+            <div className="space-y-6 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                Empowering Migrant Workers in Tamil Nadu
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0">
+                MWAP connects migrant workers with essential services, information, and support systems.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <Button size="lg">
+                  <Link to="/register" className="flex items-center gap-2">
+                    Register Now <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline">
+                  <Link to="/about" className="flex items-center gap-2">
+                    Learn More <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold max-w-4xl leading-tight mb-6">
-              Supporting Migrant Workers with Dignity and Care
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              MWAP helps migrant workers access essential services, navigate legal processes, and connect with government schemes in Tamil Nadu.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <CustomButton size="lg" asChild>
-                <Link to="/register">Register Now</Link>
-              </CustomButton>
-              <CustomButton size="lg" variant="outline" asChild>
-                <Link to="/services">Explore Services</Link>
-              </CustomButton>
+            <div className="flex justify-center">
+              <div className="relative w-full max-w-md">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/10 rounded-3xl transform rotate-3"></div>
+                <img 
+                  src="/placeholder.svg" 
+                  alt="Migrant Workers" 
+                  className="relative z-10 rounded-3xl shadow-lg w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-accent">
+      <section className="py-16 bg-accent/30">
         <div className="section-container">
-          <div className="text-center mb-16 animate-fade-up">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How We Help</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How We Help</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Our platform provides comprehensive support for migrant workers through these key services
+              Our platform offers comprehensive support for migrant workers across multiple dimensions
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 icon: <Users className="h-10 w-10 text-primary" />,
-                title: "Registration",
-                description: "Easy registration process with unique ID generation for each worker"
+                title: "Identity & Registration",
+                description: "Secure registration process with unique ID generation for accessing government services"
               },
               {
-                icon: <FileCheck className="h-10 w-10 text-primary" />,
-                title: "Documentation",
-                description: "Assistance with legal documentation and verification processes"
+                icon: <FileText className="h-10 w-10 text-primary" />,
+                title: "Scheme Information",
+                description: "Access to information about Tamil Nadu government welfare schemes and benefits"
               },
               {
-                icon: <MessageSquare className="h-10 w-10 text-primary" />,
-                title: "Information",
-                description: "Chatbot support to access Tamil Nadu government schemes"
-              },
-              {
-                icon: <CheckCircle className="h-10 w-10 text-primary" />,
-                title: "Verification",
-                description: "Secure verification through Aadhaar and OTP validation"
+                icon: <HelpCircle className="h-10 w-10 text-primary" />,
+                title: "Guidance & Support",
+                description: "AI-powered chatbot to answer queries about available government schemes and eligibility"
               }
             ].map((feature, index) => (
-              <div 
-                key={index} 
-                className="glass-effect rounded-xl p-6 hover:translate-y-[-5px] transition-transform duration-300 animate-fade-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
+              <Card key={index} className="bg-card/50 border-border/50">
+                <CardContent className="pt-6">
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-mwap-700 to-mwap-900 text-white">
-        <div className="section-container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-up">Ready to Get Started?</h2>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-8 animate-fade-up" style={{ animationDelay: "100ms" }}>
-            Join thousands of migrant workers who have already benefited from our services.
-            Registration is quick, simple, and opens the door to numerous benefits.
-          </p>
-          <div className="animate-fade-up" style={{ animationDelay: "200ms" }}>
-            <CustomButton 
-              size="lg" 
-              variant="glass" 
-              className="bg-white/10 hover:bg-white/20"
-              asChild
-            >
-              <Link to="/register">
-                Register Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </CustomButton>
+      <section className="py-20 bg-primary/5">
+        <div className="section-container">
+          <div className="glass-effect rounded-xl p-8 md:p-12 text-center">
+            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              Register on our platform to access information about government schemes, generate your unique worker ID, and get personalized support.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="rounded-full">
+                <Link to="/register" className="flex items-center gap-2">
+                  Register Now <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="rounded-full">
+                <Link to="/chatbot" className="flex items-center gap-2">
+                  Try Our Chatbot <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-16">
+        <div className="section-container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Why Choose MWAP?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We're dedicated to improving the lives of migrant workers through technology and support
+            </p>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: <CheckCircle className="h-6 w-6 text-primary" />,
+                title: "Easy Registration",
+                description: "Simple and secure registration process"
+              },
+              {
+                icon: <CheckCircle className="h-6 w-6 text-primary" />,
+                title: "Unique Worker ID",
+                description: "Digital identity for accessing services"
+              },
+              {
+                icon: <CheckCircle className="h-6 w-6 text-primary" />,
+                title: "Multi-language Support",
+                description: "Information in multiple languages"
+              },
+              {
+                icon: <CheckCircle className="h-6 w-6 text-primary" />,
+                title: "24/7 AI Assistance",
+                description: "Get answers anytime through our chatbot"
+              }
+            ].map((benefit, index) => (
+              <div key={index} className="flex gap-3 p-4">
+                <div className="shrink-0 mt-1">{benefit.icon}</div>
+                <div>
+                  <h3 className="font-bold mb-1">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
