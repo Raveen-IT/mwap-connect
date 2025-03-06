@@ -70,6 +70,10 @@ const Login = () => {
     setTimeout(() => {
       if (user) {
         setCurrentUser(user);
+        
+        // Dispatch storage event to notify other components
+        window.dispatchEvent(new Event("storage"));
+        
         toast.success("Login successful!");
         navigate('/dashboard');
       } else {

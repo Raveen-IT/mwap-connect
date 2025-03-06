@@ -1,9 +1,20 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getCurrentUser, clearCurrentUser } from "@/utils/storage";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -15,7 +26,9 @@ const navLinks = [
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(getCurrentUser());
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +43,32 @@ export const Navbar = () => {
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
+
+  // Check for user login status changes
+  useEffect(() => {
+    const checkUserStatus = () => {
+      setUser(getCurrentUser());
+    };
+
+    window.addEventListener("storage", checkUserStatus);
+    return () => window.removeEventListener("storage", checkUserStatus);
+  }, []);
+
+  const handleLogout = () => {
+    clearCurrentUser();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      ? name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+      : "U";
+  };
 
   return (
     <header
@@ -70,14 +109,52 @@ export const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <div className="flex items-center gap-3">
-            <Button asChild variant="outline" size="sm" className="rounded-full">
-              <Link to="/login">Log In</Link>
-            </Button>
-            <Button asChild size="sm" className="rounded-full">
-              <Link to="/register">Register</Link>
-            </Button>
-          </div>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  {user.profileImage ? (
+                    <AvatarImage src={user.profileImage} alt={user.name} />
+                  ) : null}
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-0.5">
+                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user.mobile}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <Link to="/login">Log In</Link>
+              </Button>
+              <Button asChild size="sm" className="rounded-full">
+                <Link to="/register">Register</Link>
+              </Button>
+            </div>
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -120,14 +197,45 @@ export const Navbar = () => {
                 )}
               </Link>
             ))}
-            <div className="pt-4 flex flex-col gap-4">
-              <Button asChild variant="outline" className="rounded-full w-full">
-                <Link to="/login">Log In</Link>
-              </Button>
-              <Button asChild className="rounded-full w-full">
-                <Link to="/register">Register</Link>
-              </Button>
-            </div>
+            
+            {user ? (
+              <div className="pt-4 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    {user.profileImage ? (
+                      <AvatarImage src={user.profileImage} alt={user.name} />
+                    ) : null}
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">{user.mobile}</span>
+                  </div>
+                </div>
+                <Button asChild variant="outline" className="rounded-full w-full">
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="rounded-full w-full text-destructive hover:text-destructive"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-4 flex flex-col gap-4">
+                <Button asChild variant="outline" className="rounded-full w-full">
+                  <Link to="/login">Log In</Link>
+                </Button>
+                <Button asChild className="rounded-full w-full">
+                  <Link to="/register">Register</Link>
+                </Button>
+              </div>
+            )}
           </nav>
         </div>
       </div>
