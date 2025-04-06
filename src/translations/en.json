@@ -38,5 +38,18 @@
   "register.continue": "Continue to Verification",
   "register.processing": "Processing...",
   "register.mobileExists": "This mobile number is already registered",
-  "register.aadhaarExists": "This Aadhaar number is already registered"
+  "register.aadhaarExists": "This Aadhaar number is already registered",
+  
+  "chatbot.title": "MWAP Assistant",
+  "chatbot.subtitle": "Explore benefits and schemes for migrant workers across India",
+  "chatbot.welcome": "Hello! I'm your MWAP assistant. Please select a category below to explore benefits and schemes for migrant workers, or ask me any specific questions.",
+  "chatbot.welcomeUser": "Welcome back, {name}! Please select a benefit category below to explore schemes for migrant workers, or ask me any specific questions.",
+  "chatbot.categoryTitle": "Select a Category",
+  "chatbot.messagePlaceholder": "Type your message or question about benefits...",
+  "chatbot.exploreByCategory": "Explore Benefits by Category",
+  "chatbot.nationalSchemes": "National Schemes",
+  "chatbot.laborProtection": "Labor Protection",
+  "chatbot.familyBenefits": "Family & Children Benefits",
+  "chatbot.skillDevelopment": "Skill Development",
+  "chatbot.legalRights": "Legal Rights"
 }

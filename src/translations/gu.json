@@ -38,5 +38,18 @@
   "register.continue": "ચકાસણી માટે ચાલુ રાખો",
   "register.processing": "પ્રક્રિયા થઈ રહી છે...",
   "register.mobileExists": "આ મોબાઇલ નંબર પહેલેથી નોંધાયેલ છે",
-  "register.aadhaarExists": "આ આધાર નંબર પહેલેથી નોંધાયેલ છે"
+  "register.aadhaarExists": "આ આધાર નંબર પહેલેથી નોંધાયેલ છે",
+  
+  "chatbot.title": "MWAP સહાયક",
+  "chatbot.subtitle": "સમગ્ર ભારતમાં સ્થળાંતરિત કામદારો માટે લાભો અને યોજનાઓ શોધો",
+  "chatbot.welcome": "નમસ્તે! હું તમારો MWAP સહાયક છું. સ્થળાંતરિત કામદારો માટે લાભો અને યોજનાઓ શોધવા માટે નીચેની શ્રેણી પસંદ કરો, અથવા મને કોઈપણ વિશિષ્ટ પ્રશ્નો પૂછો.",
+  "chatbot.welcomeUser": "સ્વાગત છે, {name}! સ્થળાંતરિત કામદારો માટે યોજનાઓ શોધવા માટે નીચેની લાભ શ્રેણી પસંદ કરો, અથવા મને કોઈપણ વિશિષ્ટ પ્રશ્નો પૂછો.",
+  "chatbot.categoryTitle": "એક શ્રેણી પસંદ કરો",
+  "chatbot.messagePlaceholder": "તમારો સંદેશ અથવા લાભો વિશે પ્રશ્ન લખો...",
+  "chatbot.exploreByCategory": "શ્રેણી દ્વારા લાભો શોધો",
+  "chatbot.nationalSchemes": "રાષ્ટ્રીય યોજનાઓ",
+  "chatbot.laborProtection": "શ્રમ સંરક્ષણ",
+  "chatbot.familyBenefits": "પરિવાર અને બાળકો માટે લાભો",
+  "chatbot.skillDevelopment": "કૌશલ્ય વિકાસ",
+  "chatbot.legalRights": "કાનૂની અધિકારો"
 }
