@@ -17,7 +17,7 @@ const Index = () => {
               Migrant Worker Assistance Platform
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 animate-fade-up animation-delay-100">
-              Supporting migrant workers with essential services, information, and assistance
+              Supporting migrant workers across India with essential services, information, and assistance
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up animation-delay-200">
               <Button 
@@ -67,7 +67,7 @@ const Index = () => {
                 <BarChart4 className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-3">Government Schemes</h3>
-              <p className="text-muted-foreground">Access to Tamil Nadu government welfare schemes for migrant workers</p>
+              <p className="text-muted-foreground">Access to national and state-specific welfare schemes for migrant workers</p>
             </div>
 
             {/* Feature 4 */}
@@ -88,7 +88,7 @@ const Index = () => {
           <div className="glass-effect p-10 md:p-16 rounded-2xl text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Join thousands of migrant workers who have already benefited from our platform. Register today and access all services.
+              Join thousands of migrant workers across India who have already benefited from our platform. Register today and access all services.
             </p>
             <Button 
               size="lg" 

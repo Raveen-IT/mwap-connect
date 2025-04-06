@@ -19,5 +19,24 @@
   "login.enterOTP": "कृपया अपने मोबाइल नंबर पर भेजा गया OTP दर्ज करें",
   "login.otpPlaceholder": "4-अंकों का OTP दर्ज करें",
   "login.resendOTP": "OTP नहीं मिला? पुनः भेजें",
-  "login.loginBtn": "लॉग इन"
+  "login.loginBtn": "लॉग इन",
+  
+  "register.title": "MWAP में शामिल हों",
+  "register.subtitle": "पूरे भारत में प्रवासी श्रमिकों के लिए सेवाओं तक पहुंच प्राप्त करने के लिए पंजीकरण करें",
+  "register.name": "पूरा नाम",
+  "register.age": "आयु",
+  "register.gender": "लिंग",
+  "register.male": "पुरुष",
+  "register.female": "महिला",
+  "register.other": "अन्य",
+  "register.workType": "काम का प्रकार",
+  "register.migrationPlace": "प्रवास का स्थान",
+  "register.mobileNumber": "मोबाइल नंबर",
+  "register.mobileInfo": "हम इस नंबर पर OTP भेजेंगे",
+  "register.aadhaar": "आधार नंबर",
+  "register.email": "ईमेल पता (वैकल्पिक)",
+  "register.continue": "सत्यापन के लिए जारी रखें",
+  "register.processing": "प्रोसेसिंग...",
+  "register.mobileExists": "यह मोबाइल नंबर पहले से ही पंजीकृत है",
+  "register.aadhaarExists": "यह आधार नंबर पहले से ही पंजीकृत है"
 }

@@ -23,7 +23,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hello! I'm your MWAP assistant. Ask me anything about Tamil Nadu government schemes for migrant workers.",
+      content: "Hello! I'm your MWAP assistant. Ask me anything about government schemes and benefits for migrant workers across India.",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -32,42 +32,138 @@ const Chatbot = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Sample schemes data (in a real app, this would come from a backend)
+  // Expanded schemes data with national and state schemes
   const schemes = [
     {
-      name: "Tamil Nadu Construction Workers Welfare Scheme",
-      description: "Provides financial assistance, healthcare, and education benefits to registered construction workers.",
-      eligibility: "Migrant workers employed in the construction sector in Tamil Nadu for at least 90 days.",
-    },
-    {
-      name: "Migrant Workers Health Insurance Scheme",
-      description: "Covers medical expenses up to ₹5 lakhs for migrant workers and their families.",
-      eligibility: "All registered migrant workers residing in Tamil Nadu.",
-    },
-    {
-      name: "Pradhan Mantri Shram Yogi Maandhan (PM-SYM)",
-      description: "Pension scheme for unorganized workers with monthly income up to ₹15,000.",
-      eligibility: "Workers aged 18-40 years in the unorganized sector.",
+      name: "Inter-State Migrant Workmen Act",
+      description: "Regulates employment of inter-state migrant workers and provides for their conditions of service.",
+      eligibility: "Any worker employed by a contractor in one state but working in another state.",
+      benefits: "Legal protection, minimum wages, suitable accommodation, medical facilities, and displacement allowance."
     },
     {
       name: "One Nation One Ration Card",
       description: "Allows migrant workers to access PDS benefits across the country using their ration card.",
       eligibility: "Migrant workers with valid ration cards.",
+      benefits: "Access to subsidized food grains from any Fair Price Shop across India, regardless of the state where the ration card was issued."
     },
     {
-      name: "Tamil Nadu Skill Development Corporation Training",
-      description: "Free skill training programs for migrant workers to enhance employment opportunities.",
-      eligibility: "Any migrant worker residing in Tamil Nadu.",
+      name: "Pradhan Mantri Shram Yogi Maandhan (PM-SYM)",
+      description: "Pension scheme for unorganized workers with monthly income up to ₹15,000.",
+      eligibility: "Workers aged 18-40 years in the unorganized sector.",
+      benefits: "Assured monthly pension of ₹3,000 after the age of 60 years with a minimal contribution."
     },
+    {
+      name: "Ayushman Bharat",
+      description: "Health insurance scheme providing coverage up to ₹5 lakhs per family per year.",
+      eligibility: "Poor and vulnerable families as identified by Socio-Economic Caste Census data.",
+      benefits: "Cashless and paperless access to healthcare services at empaneled hospitals."
+    },
+    {
+      name: "PM Garib Kalyan Yojana",
+      description: "Comprehensive relief package during crisis situations.",
+      eligibility: "Workers in unorganized sector, including migrants.",
+      benefits: "Free food grains, direct benefit transfers, and increased wages under MGNREGA."
+    },
+    {
+      name: "Construction Workers Welfare Schemes",
+      description: "State-specific welfare schemes for construction workers administered through welfare boards.",
+      eligibility: "Registered construction workers.",
+      benefits: "Accident coverage, education scholarships for children, maternity benefits, pension, and housing assistance."
+    },
+    {
+      name: "National Child Labour Project",
+      description: "Rehabilitation of child workers and education for children of migrant workers.",
+      eligibility: "Children of migrant workers and rescued child laborers.",
+      benefits: "Educational support, vocational training, and mainstreaming into formal education."
+    },
+    {
+      name: "Pradhan Mantri Awas Yojana",
+      description: "Housing scheme for urban and rural populations.",
+      eligibility: "Economically weaker sections and low-income groups.",
+      benefits: "Financial assistance for house construction or enhancement."
+    },
+    {
+      name: "Building and Other Construction Workers Act",
+      description: "Regulates employment and conditions of service for construction workers.",
+      eligibility: "Workers engaged in building or construction work for more than 90 days in a year.",
+      benefits: "Social security, safety measures, and welfare provisions."
+    },
+    {
+      name: "Jan Dhan Yojana",
+      description: "Financial inclusion program providing access to banking services.",
+      eligibility: "All Indian citizens, including migrant workers.",
+      benefits: "No-frills bank accounts, RuPay debit card, accident insurance cover, and overdraft facility."
+    },
+    {
+      name: "Skill Development Programs",
+      description: "Various state and central initiatives for skill enhancement.",
+      eligibility: "Any worker looking to enhance skills.",
+      benefits: "Free training, certification, and improved employment opportunities."
+    }
   ];
   
-  // Simple keyword-based response system
+  // State-specific schemes
+  const stateSchemes = {
+    "maharashtra": [
+      {
+        name: "Mahatma Jyotiba Phule Jan Arogya Yojana",
+        description: "Health insurance scheme in Maharashtra covering migrant workers.",
+        benefits: "Cashless treatment up to ₹1.5 lakhs per family per year."
+      }
+    ],
+    "kerala": [
+      {
+        name: "Aawaz Health Insurance Scheme",
+        description: "Health insurance for migrant workers in Kerala.",
+        benefits: "Coverage up to ₹15,000 per year for outpatient care and hospitalization."
+      }
+    ],
+    "delhi": [
+      {
+        name: "Delhi Building and Other Construction Workers Welfare Board",
+        description: "Welfare initiatives for construction workers in Delhi.",
+        benefits: "Financial assistance for education, healthcare, and pension."
+      }
+    ]
+  };
+  
+  // Rights and legal protections
+  const rights = [
+    "Minimum Wages Act: Right to receive minimum wages as notified by the government.",
+    "Equal Remuneration Act: Right to equal pay for equal work regardless of gender.",
+    "Payment of Wages Act: Right to timely payment of wages without unauthorized deductions.",
+    "Contract Labor Act: Regulations for employment of contract labor and their working conditions.",
+    "Trade Unions Act: Right to form and join trade unions.",
+    "Industrial Disputes Act: Framework for investigation and settlement of industrial disputes.",
+    "Employees' State Insurance Act: Medical and cash benefits in case of sickness, maternity, and injury.",
+    "Employees' Provident Fund: Retirement benefit scheme for organized sector workers."
+  ];
+  
+  // Enhanced keyword-based response system
   const getBotResponse = (question: string): string => {
     const lowercaseQuestion = question.toLowerCase();
     
     // Check for greetings
     if (lowercaseQuestion.includes("hello") || lowercaseQuestion.includes("hi")) {
-      return `Hello${user ? ` ${user.name}` : ""}! How can I help you today?`;
+      return `Hello${user ? ` ${user.name}` : ""}! How can I help you today? You can ask me about government schemes, benefits, or rights for migrant workers across India.`;
+    }
+    
+    // Check for state-specific queries
+    for (const state in stateSchemes) {
+      if (lowercaseQuestion.includes(state)) {
+        const stateSpecificSchemes = stateSchemes[state as keyof typeof stateSchemes];
+        return `Here are some specific schemes for migrant workers in ${state.charAt(0).toUpperCase() + state.slice(1)}:\n\n${stateSpecificSchemes.map(scheme => `• ${scheme.name}: ${scheme.description}\n  Benefits: ${scheme.benefits}`).join("\n\n")}`;
+      }
+    }
+    
+    // Check for rights and legal protections
+    if (
+      lowercaseQuestion.includes("right") || 
+      lowercaseQuestion.includes("legal") || 
+      lowercaseQuestion.includes("protection") ||
+      lowercaseQuestion.includes("law")
+    ) {
+      return `Migrant workers in India have several legal rights and protections:\n\n${rights.map(right => `• ${right}`).join("\n\n")}`;
     }
     
     // Check for scheme-related queries
@@ -85,29 +181,39 @@ const Chatbot = () => {
       
       if (matchingSchemes.length > 0) {
         const scheme = matchingSchemes[0];
-        return `${scheme.name}: ${scheme.description}\n\nEligibility: ${scheme.eligibility}`;
+        return `${scheme.name}: ${scheme.description}\n\nEligibility: ${scheme.eligibility}\n\nBenefits: ${scheme.benefits}`;
       } else {
-        return `Here are some Tamil Nadu government schemes for migrant workers:\n\n${schemes.map(s => `• ${s.name}`).join("\n")}.\n\nAsk me about any specific scheme for more details.`;
+        return `Here are some government schemes for migrant workers across India:\n\n${schemes.slice(0, 5).map(s => `• ${s.name}`).join("\n")}.\n\nAsk me about any specific scheme for more details or type "more schemes" to see additional options.`;
       }
+    }
+    
+    // Check for "more schemes" request
+    if (lowercaseQuestion.includes("more scheme")) {
+      return `Additional government schemes for migrant workers:\n\n${schemes.slice(5).map(s => `• ${s.name}`).join("\n")}.\n\nAsk me about any specific scheme for more details.`;
     }
     
     // Check for eligibility queries
     if (lowercaseQuestion.includes("eligible") || lowercaseQuestion.includes("eligibility") || lowercaseQuestion.includes("qualify")) {
-      return "Eligibility varies by scheme. Most schemes require registration as a migrant worker in Tamil Nadu. Some schemes are specific to certain types of work like construction or agriculture. Would you like information about a specific scheme?";
+      return "Eligibility varies by scheme. Most schemes require proper identification documents like Aadhaar card, voter ID, or ration card. Some schemes are specific to certain types of work like construction or agriculture. Would you like information about a specific scheme?";
     }
     
     // Check for registration queries
     if (lowercaseQuestion.includes("register") || lowercaseQuestion.includes("registration") || lowercaseQuestion.includes("sign up")) {
-      return "To register for Tamil Nadu government schemes, you need to visit the nearest Labor Welfare Office with your ID proof, address proof, and work certificate. For construction workers, registration with the Tamil Nadu Construction Workers Welfare Board is required.";
+      return "Registration processes for various schemes differ by state and scheme type. For most welfare schemes, you need to visit the nearest Labor Welfare Office or Common Service Center with your ID proof, address proof, and work certificate. For construction workers, registration with the state Construction Workers Welfare Board is required. Many states now offer online registration facilities as well.";
     }
     
     // Check for benefit amount queries
     if (lowercaseQuestion.includes("amount") || lowercaseQuestion.includes("money") || lowercaseQuestion.includes("fund") || lowercaseQuestion.includes("payment")) {
-      return "Benefit amounts vary by scheme. For example, the Construction Workers Welfare Scheme provides accident coverage up to ₹5 lakhs, education scholarships ranging from ₹1,000 to ₹10,000 for workers' children, and maternity benefits of ₹15,000.";
+      return "Benefit amounts vary by scheme. For example:\n\n• PM-SYM provides a monthly pension of ₹3,000 after retirement\n• Construction Workers Welfare Schemes offer accident coverage up to ₹5 lakhs\n• Ayushman Bharat provides health coverage of ₹5 lakhs per family per year\n• Education scholarships for workers' children range from ₹1,000 to ₹25,000 depending on the state and education level";
+    }
+    
+    // Check for document queries
+    if (lowercaseQuestion.includes("document") || lowercaseQuestion.includes("id") || lowercaseQuestion.includes("aadhaar") || lowercaseQuestion.includes("identification")) {
+      return "Important documents for migrant workers include:\n\n• Aadhaar Card (essential for most schemes)\n• Voter ID\n• Ration Card (important for PDS benefits)\n• Bank Account (for direct benefit transfers)\n• Labor Card/Construction Worker Registration (for specific welfare schemes)\n• Domicile Certificate (for state-specific benefits)\n\nIf you need assistance with documentation, many states have migrant resource centers that can help.";
     }
     
     // Default response for unrecognized queries
-    return "I don't have specific information about that. Would you like to know about available government schemes for migrant workers in Tamil Nadu?";
+    return "I don't have specific information about that. Would you like to know about available government schemes for migrant workers across India, your legal rights, or how to access specific benefits?";
   };
   
   // Auto-scroll to bottom of messages
@@ -173,7 +279,7 @@ const Chatbot = () => {
             <CardHeader>
               <CardTitle>MWAP Assistant</CardTitle>
               <CardDescription>
-                Ask questions about Tamil Nadu government schemes for migrant workers
+                Ask questions about government schemes and benefits for migrant workers across India
               </CardDescription>
             </CardHeader>
             

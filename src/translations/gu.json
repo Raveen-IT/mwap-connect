@@ -19,5 +19,24 @@
   "login.enterOTP": "કૃપા કરીને તમારા મોબાઇલ નંબર પર મોકલવામાં આવેલ OTP દાખલ કરો",
   "login.otpPlaceholder": "4-અંકનો OTP દાખલ કરો",
   "login.resendOTP": "OTP મળ્યો નથી? ફરી મોકલો",
-  "login.loginBtn": "લોગ ઇન"
+  "login.loginBtn": "લોગ ઇન",
+  
+  "register.title": "MWAP માં જોડાઓ",
+  "register.subtitle": "સમગ્ર ભારતમાં સ્થળાંતરિત કામદારો માટે સેવાઓ મેળવવા માટે નોંધણી કરો",
+  "register.name": "પૂરું નામ",
+  "register.age": "ઉંમર",
+  "register.gender": "લિંગ",
+  "register.male": "પુરુષ",
+  "register.female": "સ્ત્રી",
+  "register.other": "અન્ય",
+  "register.workType": "કામનો પ્રકાર",
+  "register.migrationPlace": "સ્થળાંતરનું સ્થાન",
+  "register.mobileNumber": "મોબાઇલ નંબર",
+  "register.mobileInfo": "અમે આ નંબર પર OTP મોકલીશું",
+  "register.aadhaar": "આધાર નંબર",
+  "register.email": "ઇમેલ એડ્રેસ (વૈકલ્પિક)",
+  "register.continue": "ચકાસણી માટે ચાલુ રાખો",
+  "register.processing": "પ્રક્રિયા થઈ રહી છે...",
+  "register.mobileExists": "આ મોબાઇલ નંબર પહેલેથી નોંધાયેલ છે",
+  "register.aadhaarExists": "આ આધાર નંબર પહેલેથી નોંધાયેલ છે"
 }

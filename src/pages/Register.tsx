@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { generateWorkerId, generateOTP } from "@/utils/id-generator";
-import { addUser, setCurrentUser } from "@/utils/storage";
+import { addUser, setCurrentUser, getUserByMobile, getUserByAadhaar } from "@/utils/storage";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { User, Gender, WorkingType } from "@/types/user";
 
@@ -82,6 +82,20 @@ const Register = () => {
     
     if (!formData.aadhaarNumber || !validateAadhaar(formData.aadhaarNumber)) {
       toast.error("Please enter a valid 12-digit Aadhaar number");
+      return false;
+    }
+    
+    // Check if mobile number already exists
+    const existingUserByMobile = getUserByMobile(formData.mobile);
+    if (existingUserByMobile) {
+      toast.error("This mobile number is already registered");
+      return false;
+    }
+    
+    // Check if Aadhaar number already exists
+    const existingUserByAadhaar = getUserByAadhaar(formData.aadhaarNumber);
+    if (existingUserByAadhaar) {
+      toast.error("This Aadhaar number is already registered");
       return false;
     }
     
