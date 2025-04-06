@@ -38,6 +38,9 @@ export const useLanguage = () => {
   return context;
 };
 
+// Add an alias for useLanguage as useTranslation for backward compatibility
+export const useTranslation = useLanguage;
+
 interface LanguageProviderProps {
   children: ReactNode;
 }

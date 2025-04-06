@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,7 @@ import { getCurrentUser } from "@/utils/storage";
 import { User } from "@/types/user";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useTranslation } from "@/context/LanguageContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface Message {
@@ -42,7 +41,7 @@ interface StateScheme {
 }
 
 const Chatbot = () => {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -58,7 +57,6 @@ const Chatbot = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Expanded schemes data organized by categories
   const schemeCategories: SchemeCategory[] = [
     {
       id: "national",
@@ -180,7 +178,6 @@ const Chatbot = () => {
     },
   ];
   
-  // State-specific schemes
   const stateSchemes: Record<string, StateScheme[]> = {
     "maharashtra": [
       {
@@ -205,7 +202,6 @@ const Chatbot = () => {
     ]
   };
   
-  // Rights and legal protections
   const rights = [
     "Minimum Wages Act: Right to receive minimum wages as notified by the government.",
     "Equal Remuneration Act: Right to equal pay for equal work regardless of gender.",
@@ -217,16 +213,13 @@ const Chatbot = () => {
     "Employees' Provident Fund: Retirement benefit scheme for organized sector workers."
   ];
   
-  // Enhanced keyword-based response system
   const getBotResponse = (question: string): string => {
     const lowercaseQuestion = question.toLowerCase();
     
-    // Check for greetings
     if (lowercaseQuestion.includes("hello") || lowercaseQuestion.includes("hi")) {
       return `Hello${user ? ` ${user.name}` : ""}! How can I help you today? You can ask me about government schemes, benefits, or rights for migrant workers across India.`;
     }
     
-    // Check for state-specific queries
     for (const state in stateSchemes) {
       if (lowercaseQuestion.includes(state)) {
         const stateSpecificSchemes = stateSchemes[state as keyof typeof stateSchemes];
@@ -234,7 +227,6 @@ const Chatbot = () => {
       }
     }
     
-    // Check for rights and legal protections
     if (
       lowercaseQuestion.includes("right") || 
       lowercaseQuestion.includes("legal") || 
@@ -244,7 +236,6 @@ const Chatbot = () => {
       return `Migrant workers in India have several legal rights and protections:\n\n${rights.map(right => `• ${right}`).join("\n\n")}`;
     }
     
-    // Check for scheme-related queries
     if (
       lowercaseQuestion.includes("scheme") || 
       lowercaseQuestion.includes("benefit") || 
@@ -252,7 +243,6 @@ const Chatbot = () => {
       lowercaseQuestion.includes("help") ||
       lowercaseQuestion.includes("support")
     ) {
-      // Check for specific scheme names
       let matchedScheme: Scheme | undefined;
       
       for (const category of schemeCategories) {
@@ -274,31 +264,25 @@ const Chatbot = () => {
       }
     }
     
-    // Check for eligibility queries
     if (lowercaseQuestion.includes("eligible") || lowercaseQuestion.includes("eligibility") || lowercaseQuestion.includes("qualify")) {
       return "Eligibility varies by scheme. Most schemes require proper identification documents like Aadhaar card, voter ID, or ration card. Some schemes are specific to certain types of work like construction or agriculture. Would you like information about a specific scheme?";
     }
     
-    // Check for registration queries
     if (lowercaseQuestion.includes("register") || lowercaseQuestion.includes("registration") || lowercaseQuestion.includes("sign up")) {
       return "Registration processes for various schemes differ by state and scheme type. For most welfare schemes, you need to visit the nearest Labor Welfare Office or Common Service Center with your ID proof, address proof, and work certificate. For construction workers, registration with the state Construction Workers Welfare Board is required. Many states now offer online registration facilities as well.";
     }
     
-    // Check for benefit amount queries
     if (lowercaseQuestion.includes("amount") || lowercaseQuestion.includes("money") || lowercaseQuestion.includes("fund") || lowercaseQuestion.includes("payment")) {
       return "Benefit amounts vary by scheme. For example:\n\n• PM-SYM provides a monthly pension of ₹3,000 after retirement\n• Construction Workers Welfare Schemes offer accident coverage up to ₹5 lakhs\n• Ayushman Bharat provides health coverage of ₹5 lakhs per family per year\n• Education scholarships for workers' children range from ₹1,000 to ₹25,000 depending on the state and education level";
     }
     
-    // Check for document queries
     if (lowercaseQuestion.includes("document") || lowercaseQuestion.includes("id") || lowercaseQuestion.includes("aadhaar") || lowercaseQuestion.includes("identification")) {
       return "Important documents for migrant workers include:\n\n• Aadhaar Card (essential for most schemes)\n• Voter ID\n• Ration Card (important for PDS benefits)\n• Bank Account (for direct benefit transfers)\n• Labor Card/Construction Worker Registration (for specific welfare schemes)\n• Domicile Certificate (for state-specific benefits)\n\nIf you need assistance with documentation, many states have migrant resource centers that can help.";
     }
     
-    // Default response for unrecognized queries
     return "I don't have specific information about that. Please select one of the benefit categories below or ask about government schemes for migrant workers across India, your legal rights, or how to access specific benefits.";
   };
 
-  // Handle scheme selection
   const handleSchemeSelect = (scheme: Scheme) => {
     const botResponse: Message = {
       id: Date.now().toString(),
@@ -310,18 +294,15 @@ const Chatbot = () => {
     setMessages(prev => [...prev, botResponse]);
   };
   
-  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   
-  // Load user data
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
       
-      // Add personalized greeting if user is logged in
       setMessages(prev => [
         ...prev,
         {
@@ -339,7 +320,6 @@ const Chatbot = () => {
     
     if (!input.trim()) return;
     
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input,
@@ -351,7 +331,6 @@ const Chatbot = () => {
     setInput("");
     setIsLoading(true);
     
-    // Simulate bot thinking time
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -371,15 +350,14 @@ const Chatbot = () => {
         <div className="max-w-4xl mx-auto">
           <Card className="h-[calc(100vh-10rem)]">
             <CardHeader>
-              <CardTitle className="text-primary">MWAP Assistant</CardTitle>
+              <CardTitle className="text-primary">{t("chatbot.title")}</CardTitle>
               <CardDescription>
-                Explore benefits and schemes for migrant workers across India
+                {t("chatbot.subtitle")}
               </CardDescription>
             </CardHeader>
             
             <CardContent className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-4 h-full">
-                {/* Benefits Categories Sidebar */}
                 <div className="border-r p-4 hidden md:block">
                   <h3 className="font-semibold mb-4">Select a Category</h3>
                   <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
@@ -403,7 +381,6 @@ const Chatbot = () => {
                 </div>
                 
                 <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-[calc(100vh-18rem)]`}>
-                  {/* Chat Messages */}
                   <ScrollArea className="flex-1 px-4">
                     <div className="space-y-4 py-4">
                       {messages.map((message) => (
@@ -467,7 +444,6 @@ const Chatbot = () => {
                         </div>
                       )}
                       
-                      {/* Benefits Categories for Mobile View */}
                       {messages.length <= 2 && !isLoading && (
                         <div className="flex md:hidden flex-col space-y-4 py-4">
                           <div className="font-medium text-center">Explore Benefits by Category</div>
@@ -499,7 +475,6 @@ const Chatbot = () => {
                     </div>
                   </ScrollArea>
                   
-                  {/* Show schemes for selected category */}
                   {selectedCategory && (
                     <div className="border-t p-4 mt-auto">
                       <h3 className="font-medium mb-3">
@@ -549,7 +524,7 @@ const Chatbot = () => {
             <CardFooter className="p-4 pt-0">
               <form onSubmit={handleSendMessage} className="flex w-full gap-2">
                 <Input
-                  placeholder="Type your message or question about benefits..."
+                  placeholder={t("chatbot.messagePlaceholder")}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading}
