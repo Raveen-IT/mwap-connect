@@ -1,0 +1,23 @@
+
+{
+  "navbar.home": "హోమ్",
+  "navbar.about": "మా గురించి",
+  "navbar.services": "సేవలు",
+  "navbar.contact": "సంప్రదించండి",
+  "navbar.login": "లాగిన్",
+  "navbar.register": "నమోదు",
+  "navbar.dashboard": "డాష్‌బోర్డ్",
+  "navbar.logout": "లాగ్అవుట్",
+  
+  "welcome.title": "మళ్ళీ స్వాగతం",
+  "welcome.subtitle": "మీ MWAP ఖాతా మరియు సేవలను యాక్సెస్ చేయడానికి లాగిన్ చేయండి",
+  "login.mobile": "మొబైల్ నంబర్",
+  "login.continueBtn": "కొనసాగించండి",
+  "login.accountQuestion": "ఖాతా లేదా?",
+  "login.registerLink": "నమోదు చేసుకోండి",
+  "login.otpVerification": "OTP ధృవీకరణ",
+  "login.enterOTP": "దయచేసి మీ మొబైల్ నంబర్‌కు పంపిన OTPని నమోదు చేయండి",
+  "login.otpPlaceholder": "4-అంకెల OTPని నమోదు చేయండి",
+  "login.resendOTP": "OTP అందలేదా? మళ్ళీ పంపండి",
+  "login.loginBtn": "లాగిన్"
+}

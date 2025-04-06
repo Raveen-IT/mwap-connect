@@ -1,0 +1,23 @@
+
+{
+  "navbar.home": "Home",
+  "navbar.about": "About Us",
+  "navbar.services": "Services",
+  "navbar.contact": "Contact",
+  "navbar.login": "Log In",
+  "navbar.register": "Register",
+  "navbar.dashboard": "Dashboard",
+  "navbar.logout": "Logout",
+  
+  "welcome.title": "Welcome Back",
+  "welcome.subtitle": "Log in to access your MWAP account and services",
+  "login.mobile": "Mobile Number",
+  "login.continueBtn": "Continue",
+  "login.accountQuestion": "Don't have an account?",
+  "login.registerLink": "Register",
+  "login.otpVerification": "OTP Verification",
+  "login.enterOTP": "Please enter the OTP sent to your mobile number",
+  "login.otpPlaceholder": "Enter 4-digit OTP",
+  "login.resendOTP": "Didn't receive OTP? Resend",
+  "login.loginBtn": "Login"
+}

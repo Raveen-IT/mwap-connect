@@ -1,0 +1,23 @@
+
+{
+  "navbar.home": "হোম",
+  "navbar.about": "আমাদের সম্পর্কে",
+  "navbar.services": "সেবা",
+  "navbar.contact": "যোগাযোগ",
+  "navbar.login": "লগ ইন",
+  "navbar.register": "নিবন্ধন",
+  "navbar.dashboard": "ড্যাশবোর্ড",
+  "navbar.logout": "লগ আউট",
+  
+  "welcome.title": "আবার স্বাগতম",
+  "welcome.subtitle": "আপনার MWAP অ্যাকাউন্ট এবং পরিষেবাগুলি অ্যাক্সেস করতে লগ ইন করুন",
+  "login.mobile": "মোবাইল নম্বর",
+  "login.continueBtn": "চালিয়ে যান",
+  "login.accountQuestion": "অ্যাকাউন্ট নেই?",
+  "login.registerLink": "নিবন্ধন করুন",
+  "login.otpVerification": "OTP যাচাইকরণ",
+  "login.enterOTP": "অনুগ্রহ করে আপনার মোবাইল নম্বরে পাঠানো OTP লিখুন",
+  "login.otpPlaceholder": "4-সংখ্যার OTP লিখুন",
+  "login.resendOTP": "OTP পাননি? আবার পাঠান",
+  "login.loginBtn": "লগ ইন"
+}

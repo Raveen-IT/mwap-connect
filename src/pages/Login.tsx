@@ -10,6 +10,7 @@ import { Phone, LogIn, Key } from "lucide-react";
 import { validateMobileNumber } from "@/utils/form-validators";
 import { getUserByMobile, setCurrentUser } from "@/utils/storage";
 import { generateOTP } from "@/utils/id-generator";
+import { useLanguage } from "@/context/LanguageContext";
 
 type LoginStep = 'mobile' | 'verification';
 
@@ -20,6 +21,7 @@ const Login = () => {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
+  const { t } = useLanguage();
 
   const handleMobileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,9 +90,9 @@ const Login = () => {
       <section className="py-16">
         <div className="section-container">
           <div className="text-center mb-12 animate-fade-up">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome Back</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">{t("welcome.title")}</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Log in to access your MWAP account and services
+              {t("welcome.subtitle")}
             </p>
           </div>
 
@@ -98,12 +100,12 @@ const Login = () => {
             {step === 'mobile' && (
               <div className="glass-effect rounded-xl p-8 animate-fade-up">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <LogIn className="h-6 w-6" /> Login
+                  <LogIn className="h-6 w-6" /> {t("navbar.login")}
                 </h2>
                 <form onSubmit={handleMobileSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="mobile" className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" /> Mobile Number
+                      <Phone className="h-4 w-4" /> {t("login.mobile")}
                     </Label>
                     <Input
                       id="mobile"
@@ -120,17 +122,17 @@ const Login = () => {
                     disabled={loading}
                     className="w-full"
                   >
-                    {loading ? "Sending OTP..." : "Continue"}
+                    {loading ? "Sending OTP..." : t("login.continueBtn")}
                   </Button>
                   
                   <div className="text-center pt-2">
                     <p className="text-sm text-muted-foreground">
-                      Don't have an account?{" "}
+                      {t("login.accountQuestion")}{" "}
                       <a 
                         href="/register" 
                         className="text-primary hover:underline font-medium"
                       >
-                        Register
+                        {t("login.registerLink")}
                       </a>
                     </p>
                   </div>
@@ -141,10 +143,10 @@ const Login = () => {
             {step === 'verification' && (
               <div className="glass-effect rounded-xl p-8 animate-fade-up">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Key className="h-6 w-6" /> OTP Verification
+                  <Key className="h-6 w-6" /> {t("login.otpVerification")}
                 </h2>
                 <p className="mb-6 text-muted-foreground">
-                  Please enter the OTP sent to your mobile number {mobile}
+                  {t("login.enterOTP")} {mobile}
                 </p>
                 
                 <form onSubmit={handleVerificationSubmit} className="space-y-6">
@@ -154,7 +156,7 @@ const Login = () => {
                       id="otp"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter 4-digit OTP"
+                      placeholder={t("login.otpPlaceholder")}
                       maxLength={4}
                       autoFocus
                       required
@@ -169,7 +171,7 @@ const Login = () => {
                         toast.success(`OTP resent: ${generatedOtp}`);
                       }}
                     >
-                      Didn't receive OTP? Resend
+                      {t("login.resendOTP")}
                     </button>
                   </div>
                   
@@ -178,7 +180,7 @@ const Login = () => {
                     disabled={loading}
                     className="w-full"
                   >
-                    {loading ? "Verifying..." : "Login"}
+                    {loading ? "Verifying..." : t("login.loginBtn")}
                   </Button>
                 </form>
               </div>

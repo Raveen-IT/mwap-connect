@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getCurrentUser, clearCurrentUser } from "@/utils/storage";
@@ -15,13 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "About Us", path: "/about" },
-  { name: "Services", path: "/services" },
-  { name: "Contact", path: "/contact" },
-];
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageSelector } from "@/components/language/LanguageSelector";
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +24,14 @@ export const Navbar = () => {
   const [user, setUser] = useState(getCurrentUser());
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
+
+  const navLinks = [
+    { name: t("navbar.home"), path: "/" },
+    { name: t("navbar.about"), path: "/about" },
+    { name: t("navbar.services"), path: "/services" },
+    { name: t("navbar.contact"), path: "/contact" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,6 +113,8 @@ export const Navbar = () => {
             </Link>
           ))}
           
+          <LanguageSelector />
+          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -135,40 +140,43 @@ export const Navbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>{t("navbar.dashboard")}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
+                  <span>{t("navbar.logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-3">
               <Button asChild variant="outline" size="sm" className="rounded-full">
-                <Link to="/login">Log In</Link>
+                <Link to="/login">{t("navbar.login")}</Link>
               </Button>
               <Button asChild size="sm" className="rounded-full">
-                <Link to="/register">Register</Link>
+                <Link to="/register">{t("navbar.register")}</Link>
               </Button>
             </div>
           )}
         </nav>
 
         {/* Mobile menu button */}
-        <button
-          className="md:hidden p-2 rounded-full hover:bg-accent flex items-center justify-center"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          {isOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSelector />
+          <button
+            className="p-2 rounded-full hover:bg-accent flex items-center justify-center"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+          >
+            {isOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Nav */}
@@ -215,7 +223,7 @@ export const Navbar = () => {
                   </div>
                 </div>
                 <Button asChild variant="outline" className="rounded-full w-full">
-                  <Link to="/dashboard">Dashboard</Link>
+                  <Link to="/dashboard">{t("navbar.dashboard")}</Link>
                 </Button>
                 <Button 
                   variant="outline" 
@@ -223,16 +231,16 @@ export const Navbar = () => {
                   onClick={handleLogout}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {t("navbar.logout")}
                 </Button>
               </div>
             ) : (
               <div className="pt-4 flex flex-col gap-4">
                 <Button asChild variant="outline" className="rounded-full w-full">
-                  <Link to="/login">Log In</Link>
+                  <Link to="/login">{t("navbar.login")}</Link>
                 </Button>
                 <Button asChild className="rounded-full w-full">
-                  <Link to="/register">Register</Link>
+                  <Link to="/register">{t("navbar.register")}</Link>
                 </Button>
               </div>
             )}

@@ -1,0 +1,23 @@
+
+{
+  "navbar.home": "முகப்பு",
+  "navbar.about": "எங்களை பற்றி",
+  "navbar.services": "சேவைகள்",
+  "navbar.contact": "தொடர்பு",
+  "navbar.login": "உள்நுழைய",
+  "navbar.register": "பதிவு செய்ய",
+  "navbar.dashboard": "டாஷ்போர்டு",
+  "navbar.logout": "வெளியேறு",
+  
+  "welcome.title": "மீண்டும் வரவேற்கிறோம்",
+  "welcome.subtitle": "உங்கள் MWAP கணக்கு மற்றும் சேவைகளை அணுக உள்நுழையவும்",
+  "login.mobile": "மொபைல் எண்",
+  "login.continueBtn": "தொடரவும்",
+  "login.accountQuestion": "கணக்கு இல்லையா?",
+  "login.registerLink": "பதிவு செய்யவும்",
+  "login.otpVerification": "OTP சரிபார்ப்பு",
+  "login.enterOTP": "உங்கள் மொபைல் எண்ணுக்கு அனுப்பப்பட்ட OTPயை உள்ளிடவும்",
+  "login.otpPlaceholder": "4-இலக்க OTPயை உள்ளிடவும்",
+  "login.resendOTP": "OTP பெறவில்லையா? மீண்டும் அனுப்பு",
+  "login.loginBtn": "உள்நுழைய"
+}
