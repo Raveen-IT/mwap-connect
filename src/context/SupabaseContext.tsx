@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface SupabaseContextType {
@@ -11,6 +11,7 @@ interface SupabaseContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
+  isConfigured: boolean;
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -31,40 +32,65 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isConfigured = isSupabaseConfigured();
 
   useEffect(() => {
+    // Only attempt to check sessions if Supabase is configured
+    if (!isConfigured) {
+      setIsLoading(false);
+      return;
+    }
+
     // Check for an existing session
     const getInitialSession = async () => {
       setIsLoading(true);
       
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+        
+        setSession(session);
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error('Failed to get session:', error);
+      } finally {
+        setIsLoading(false);
       }
-      
-      setSession(session);
-      setUser(session?.user || null);
-      setIsLoading(false);
     };
 
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user || null);
-        setIsLoading(false);
-      }
-    );
+    let subscription: { unsubscribe: () => void } | null = null;
+    
+    if (isConfigured) {
+      const { data } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          setUser(newSession?.user || null);
+          setIsLoading(false);
+        }
+      );
+      
+      subscription = data.subscription;
+    }
 
     return () => {
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-  }, []);
+  }, [isConfigured]);
 
   const signIn = async (email: string, password: string) => {
+    if (!isConfigured) {
+      toast.error('Supabase is not configured. Please connect via Lovable interface.');
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
@@ -81,6 +107,11 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
   };
 
   const signUp = async (email: string, password: string, userData: any) => {
+    if (!isConfigured) {
+      toast.error('Supabase is not configured. Please connect via Lovable interface.');
+      return;
+    }
+    
     try {
       const { error: signUpError } = await supabase.auth.signUp({ 
         email, 
@@ -103,6 +134,11 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
   };
 
   const signOut = async () => {
+    if (!isConfigured) {
+      toast.error('Supabase is not configured. Please connect via Lovable interface.');
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signOut();
       
@@ -125,6 +161,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
     signIn,
     signUp,
     signOut,
+    isConfigured,
   };
 
   return (

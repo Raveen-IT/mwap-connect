@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Phone, LogIn, Key } from "lucide-react";
+import { Phone, LogIn, Key, AlertCircle } from "lucide-react";
 import { validateMobileNumber } from "@/utils/form-validators";
 import { getUserByMobile, setCurrentUser } from "@/utils/storage";
 import { generateOTP } from "@/utils/id-generator";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSupabase } from "@/context/SupabaseContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-type LoginStep = 'mobile' | 'verification';
+type LoginStep = 'mobile' | 'verification' | 'email';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -21,7 +23,10 @@ const Login = () => {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { t } = useLanguage();
+  const { signIn, isConfigured } = useSupabase();
 
   const handleMobileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +90,35 @@ const Login = () => {
     }, 1000);
   };
 
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      await signIn(email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      // Error is handled in the signIn function
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Toggle between login methods
+  const toggleLoginMethod = () => {
+    if (step === 'mobile' || step === 'verification') {
+      setStep('email');
+    } else {
+      setStep('mobile');
+    }
+  };
+
   return (
     <Layout>
       <section className="py-16">
@@ -97,6 +131,30 @@ const Login = () => {
           </div>
 
           <div className="w-full max-w-md mx-auto">
+            {isConfigured && (
+              <div className="mb-6">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={toggleLoginMethod}
+                  className="w-full"
+                >
+                  {step === 'email' ? 'Login with Mobile Number' : 'Login with Email'}
+                </Button>
+              </div>
+            )}
+            
+            {!isConfigured && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Supabase Not Connected</AlertTitle>
+                <AlertDescription>
+                  Supabase integration is not configured. Please connect via the Lovable interface.
+                  Login with mobile is available as a fallback.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {step === 'mobile' && (
               <div className="glass-effect rounded-xl p-8 animate-fade-up">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -182,6 +240,60 @@ const Login = () => {
                   >
                     {loading ? "Verifying..." : t("login.loginBtn")}
                   </Button>
+                </form>
+              </div>
+            )}
+            
+            {step === 'email' && isConfigured && (
+              <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                  <LogIn className="h-6 w-6" /> Email Login
+                </h2>
+                <form onSubmit={handleEmailSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full"
+                  >
+                    {loading ? "Logging in..." : "Log in"}
+                  </Button>
+                  
+                  <div className="text-center pt-2">
+                    <p className="text-sm text-muted-foreground">
+                      {t("login.accountQuestion")}{" "}
+                      <a 
+                        href="/register" 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {t("login.registerLink")}
+                      </a>
+                    </p>
+                  </div>
                 </form>
               </div>
             )}
