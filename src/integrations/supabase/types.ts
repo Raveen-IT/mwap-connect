@@ -9,7 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      "user data": {
+        Row: {
+          "aadher number": number | null
+          created_at: string
+          gender: string | null
+          id: number
+          mail_id: string | null
+          "mobile number": number | null
+          "place of migrate": string | null
+          work: string | null
+        }
+        Insert: {
+          "aadher number"?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: number
+          mail_id?: string | null
+          "mobile number"?: number | null
+          "place of migrate"?: string | null
+          work?: string | null
+        }
+        Update: {
+          "aadher number"?: number | null
+          created_at?: string
+          gender?: string | null
+          id?: number
+          mail_id?: string | null
+          "mobile number"?: number | null
+          "place of migrate"?: string | null
+          work?: string | null
+        }
+        Relationships: []
+      }
+      user_data: {
+        Row: {
+          aadhaar_number: string
+          age: number
+          created_at: string
+          email: string | null
+          gender: string
+          id: string
+          is_verified: boolean | null
+          migration_place: string
+          mobile_number: string
+          name: string
+          working_type: string
+        }
+        Insert: {
+          aadhaar_number: string
+          age: number
+          created_at?: string
+          email?: string | null
+          gender: string
+          id?: string
+          is_verified?: boolean | null
+          migration_place: string
+          mobile_number: string
+          name: string
+          working_type: string
+        }
+        Update: {
+          aadhaar_number?: string
+          age?: number
+          created_at?: string
+          email?: string | null
+          gender?: string
+          id?: string
+          is_verified?: boolean | null
+          migration_place?: string
+          mobile_number?: string
+          name?: string
+          working_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
@@ -18,6 +17,7 @@ import { User, Gender, WorkingType } from "@/types/user";
 import { generateWorkerId, generateOTP } from "@/utils/id-generator";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { addUser, getUserByMobile, getUserByAadhaar, setCurrentUser } from "@/utils/storage";
+import { supabase } from "@/integrations/supabase/client";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
 
@@ -101,7 +101,7 @@ export const RegistrationForm = () => {
     return true;
   };
 
-  const handleDetailsSubmit = (e: React.FormEvent) => {
+  const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateDetailsForm()) {
@@ -122,7 +122,7 @@ export const RegistrationForm = () => {
     }, 1500);
   };
 
-  const handleVerificationSubmit = (e: React.FormEvent) => {
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!otp || otp.trim() === "") {
@@ -137,34 +137,38 @@ export const RegistrationForm = () => {
     
     setLoading(true);
     
-    // Generate a unique ID
-    const newUserId = generateWorkerId();
-    setUserId(newUserId);
-    
-    // Create new user object
-    const newUser: User = {
-      id: newUserId,
-      name: formData.name as string,
-      age: formData.age as number,
-      gender: formData.gender as Gender,
-      workingType: formData.workingType as WorkingType,
-      migrationPlace: formData.migrationPlace as string,
-      mobile: formData.mobile as string,
-      aadhaarNumber: formData.aadhaarNumber as string,
-      email: formData.email as string,
-      registrationDate: new Date().toISOString(),
-      isVerified: true,
-    };
-    
-    // Simulate API call
-    setTimeout(() => {
-      // Save user to local storage
-      addUser(newUser);
-      setCurrentUser(newUser);
+    try {
+      // Generate a unique ID
+      const newUserId = generateWorkerId();
+      setUserId(newUserId);
+      
+      // Insert user data into Supabase
+      const { error } = await supabase
+        .from('user_data')
+        .insert({
+          id: newUserId,
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          working_type: formData.workingType,
+          migration_place: formData.migrationPlace,
+          mobile_number: formData.mobile,
+          aadhaar_number: formData.aadhaarNumber,
+          email: formData.email,
+          is_verified: true
+        });
+
+      if (error) {
+        throw error;
+      }
       
       setStep('success');
+      toast.success('Registration completed successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to complete registration');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleGoToDashboard = () => {
