@@ -1,4 +1,3 @@
-
 {
   "navbar.home": "હોમ",
   "navbar.about": "અમારા વિશે",
@@ -51,5 +50,27 @@
   "chatbot.laborProtection": "શ્રમ સંરક્ષણ",
   "chatbot.familyBenefits": "પરિવાર અને બાળકો માટે લાભો",
   "chatbot.skillDevelopment": "કૌશલ્ય વિકાસ",
-  "chatbot.legalRights": "કાનૂની અધિકારો"
+  "chatbot.legalRights": "કાનૂની અધિકારો",
+  
+  "home.title": "સ્થળાંતરિત કામદાર સહાય મંચ",
+  "home.subtitle": "ભારતભરમાં સ્થળાંતરિત કામદારોને આવશ્યક સેવાઓ, માહિતી અને સહાય સાથે સમર્થન",
+  "home.registerBtn": "અત્યારે નોંધણી કરો",
+  "home.learnMoreBtn": "વધુ જાણો",
+  "home.featuresTitle": "અમે કેવી રીતે મદદ કરીએ છીએ",
+  
+  "home.feature1.title": "સરળ નોંધણી",
+  "home.feature1.description": "સ્થળાંતરિત કામદારો માટે સુરક્ષિત ચકાસણી સાથે સરળ નોંધણી પ્રક્રિયા",
+  
+  "home.feature2.title": "ચકાસાયેલી પ્રોફાઇલ",
+  "home.feature2.description": "આધાર અને મોબાઇલ OTP સાથે સુરક્ષિત ઓળખ ચકાસણી",
+  
+  "home.feature3.title": "સરકારી યોજનાઓ",
+  "home.feature3.description": "સ્થળાંતરિત કામદારો માટે રાષ્ટ્રીય અને રાજ્ય-વિશિષ્ટ કલ્યાણ યોજનાઓની ઍક્સેસ",
+  
+  "home.feature4.title": "AI સહાય",
+  "home.feature4.description": "ઉપલબ્ધ યોજનાઓ વિશે તમારા પ્રશ્નોના જવાબ આપવા માટે બુદ્ધિશાળી ચેટબોટ",
+  
+  "home.cta.title": "શરૂ કરવા માટે તૈયાર છો?",
+  "home.cta.description": "ભારતભરના હજારો સ્થળાંતરિત કામદારો સાથે જોડાઓ જેઓ પહેલેથી જ અમારા પ્લેટફોર્મથી લાભ મેળવી ચૂક્યા છે. આજે જ નોંધણી કરો અને બધી સેવાઓ મેળવો.",
+  "home.cta.button": "અત્યારે નોંધણી કરો"
 }

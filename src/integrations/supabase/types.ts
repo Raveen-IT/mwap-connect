@@ -9,39 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      "user data": {
-        Row: {
-          "aadher number": number | null
-          created_at: string
-          gender: string | null
-          id: number
-          mail_id: string | null
-          "mobile number": number | null
-          "place of migrate": string | null
-          work: string | null
-        }
-        Insert: {
-          "aadher number"?: number | null
-          created_at?: string
-          gender?: string | null
-          id?: number
-          mail_id?: string | null
-          "mobile number"?: number | null
-          "place of migrate"?: string | null
-          work?: string | null
-        }
-        Update: {
-          "aadher number"?: number | null
-          created_at?: string
-          gender?: string | null
-          id?: number
-          mail_id?: string | null
-          "mobile number"?: number | null
-          "place of migrate"?: string | null
-          work?: string | null
-        }
-        Relationships: []
-      }
       user_data: {
         Row: {
           aadhaar_number: string

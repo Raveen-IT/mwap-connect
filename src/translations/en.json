@@ -1,4 +1,3 @@
-
 {
   "navbar.home": "Home",
   "navbar.about": "About Us",
@@ -51,5 +50,27 @@
   "chatbot.laborProtection": "Labor Protection",
   "chatbot.familyBenefits": "Family & Children Benefits",
   "chatbot.skillDevelopment": "Skill Development",
-  "chatbot.legalRights": "Legal Rights"
+  "chatbot.legalRights": "Legal Rights",
+  
+  "home.title": "Migrant Worker Assistance Platform",
+  "home.subtitle": "Supporting migrant workers across India with essential services, information, and assistance",
+  "home.registerBtn": "Register Now",
+  "home.learnMoreBtn": "Learn More",
+  "home.featuresTitle": "How We Help",
+  
+  "home.feature1.title": "Easy Registration",
+  "home.feature1.description": "Simple registration process with secure verification for migrant workers",
+  
+  "home.feature2.title": "Verified Profiles",
+  "home.feature2.description": "Secure identity verification with Aadhaar and mobile OTP",
+  
+  "home.feature3.title": "Government Schemes",
+  "home.feature3.description": "Access to national and state-specific welfare schemes for migrant workers",
+  
+  "home.feature4.title": "AI Assistance",
+  "home.feature4.description": "Intelligent chatbot to answer your questions about available schemes",
+  
+  "home.cta.title": "Ready to Get Started?",
+  "home.cta.description": "Join thousands of migrant workers across India who have already benefited from our platform. Register today and access all services.",
+  "home.cta.button": "Register Now"
 }
