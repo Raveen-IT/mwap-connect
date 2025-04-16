@@ -1,5 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { LoadingPage } from '@/components/ui/loading-page';
 
 // Define supported languages
 export type Language = 'en' | 'hi' | 'bn' | 'ta' | 'te' | 'mr' | 'gu';
@@ -25,6 +25,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -94,7 +95,8 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isLoading }}>
+      {isLoading && <LoadingPage message="Changing language..." />}
       {children}
     </LanguageContext.Provider>
   );

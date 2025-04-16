@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -13,6 +12,7 @@ import { generateOTP } from "@/utils/id-generator";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSupabase } from "@/context/SupabaseContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LoadingPage } from "@/components/ui/loading-page";
 
 type LoginStep = 'mobile' | 'verification' | 'email';
 
@@ -27,6 +27,10 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const { t } = useLanguage();
   const { signIn, isConfigured } = useSupabase();
+
+  if (loading) {
+    return <LoadingPage message="Authenticating..." />;
+  }
 
   const handleMobileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +114,6 @@ const Login = () => {
     }
   };
 
-  // Toggle between login methods
   const toggleLoginMethod = () => {
     if (step === 'mobile' || step === 'verification') {
       setStep('email');
