@@ -64,6 +64,19 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handleResendOtp = async () => {
+    setLoading(true);
+    const newOtp = generateOTP();
+    setGeneratedOtp(newOtp);
+    const result = await sendOtpSms(mobile, newOtp);
+    if (result.success) {
+      toast.success("A new OTP has been sent to your mobile.");
+    } else {
+      toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+    }
+    setLoading(false);
+  };
+
   const handleVerificationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -232,11 +245,10 @@ const Login = () => {
                     <button 
                       type="button" 
                       className="text-primary hover:underline"
-                      onClick={() => {
-                        toast.success(`OTP resent: ${generatedOtp}`);
-                      }}
+                      onClick={handleResendOtp}
+                      disabled={loading}
                     >
-                      {t("login.resendOTP")}
+                      {loading ? "Resending OTP..." : t("login.resendOTP")}
                     </button>
                   </div>
                   

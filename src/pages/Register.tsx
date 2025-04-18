@@ -164,6 +164,19 @@ const Register = () => {
     navigate('/dashboard');
   };
 
+  const handleResendOtp = async () => {
+    setLoading(true);
+    const newOtp = generateOTP();
+    setGeneratedOtp(newOtp);
+    const result = await sendOtpSms(formData.mobile as string, newOtp);
+    if (result.success) {
+      toast.success("A new OTP has been sent to your mobile.");
+    } else {
+      toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+    }
+    setLoading(false);
+  };
+
   return (
     <Layout>
       <section className="py-16">
@@ -337,11 +350,10 @@ const Register = () => {
                     <button 
                       type="button" 
                       className="text-primary hover:underline"
-                      onClick={() => {
-                        toast.success(`OTP resent: ${generatedOtp}`);
-                      }}
+                      onClick={handleResendOtp}
+                      disabled={loading}
                     >
-                      Didn't receive OTP? Resend
+                      {loading ? "Resending OTP..." : "Didn't receive OTP? Resend"}
                     </button>
                   </div>
                   
