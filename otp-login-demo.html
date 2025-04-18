@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OTP Login Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f8; }
+    .centered { max-width: 360px; margin: 60px auto; padding: 24px; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #ccc; }
+    .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(6px);}
+    label { display: block; margin-top: 12px; }
+    input, button { width: 100%; padding: 8px; margin-top: 4px; }
+    .hidden { display: none; }
+    .success { color: green }
+    .error { color: red }
+    .mb { margin-bottom: 1em; }
+  </style>
+</head>
+<body>
+<div class="centered glass-effect">
+  <h2>Login with Mobile OTP</h2>
+  
+  <!-- Step 1: Mobile input -->
+  <div id="mobile-step">
+    <form id="mobile-form">
+      <label for="mobileInput">Mobile Number:</label>
+      <input id="mobileInput" type="text" maxlength="10" placeholder="Enter mobile number" required>
+      <button type="submit" id="sendOtpBtn">Send OTP</button>
+    </form>
+    <p class="mb small">Demo: already registered users are stored in browser storage.</p>
+  </div>
+
+  <!-- Step 2: OTP input -->
+  <div id="otp-step" class="hidden">
+    <form id="otp-form">
+      <label for="otpInput">Enter OTP sent to <span id="enteredMobile"></span>:</label>
+      <input id="otpInput" type="text" maxlength="4" placeholder="Enter OTP" required>
+      <button type="submit" id="verifyOtpBtn">Verify OTP</button>
+    </form>
+    <button id="resendOtpBtn" style="margin-top:8px;">Resend OTP</button>
+  </div>
+
+  <div id="message" class="mb"></div>
+
+  <hr class="mb">
+
+  <h4>Registered Users (for demo):</h4>
+  <pre id="users-list"></pre>
+</div>
+
+<script>
+/*
+  Simple demo: users are "registered" in localStorage for simulation.
+  User data: { mobile, name, isVerified }
+*/
+function getUsers() {
+  return JSON.parse(localStorage.getItem('demoUsers') || "[]");
+}
+function saveUsers(users) {
+  localStorage.setItem('demoUsers', JSON.stringify(users));
+}
+function addUser(mobile, name) {
+  let users = getUsers();
+  users.push({ mobile, name, isVerified: true });
+  saveUsers(users);
+}
+function findUserByMobile(mobile) {
+  return getUsers().find(u => u.mobile === mobile);
+}
+function showUsersList() {
+  const users = getUsers();
+  document.getElementById("users-list").textContent = JSON.stringify(users, null, 2);
+}
+
+// Demo: prepopulate with one user, if list empty
+if (getUsers().length === 0) {
+  addUser("9876543210", "Worker One");
+}
+
+showUsersList();
+
+let currentOtp = "";
+let currentMobile = "";
+
+// DOM elements
+const mobileStep = document.getElementById("mobile-step");
+const otpStep = document.getElementById("otp-step");
+const mobileForm = document.getElementById("mobile-form");
+const otpForm = document.getElementById("otp-form");
+const resendBtn = document.getElementById("resendOtpBtn");
+const messageDiv = document.getElementById("message");
+const enteredMobileSpan = document.getElementById("enteredMobile");
+
+function validateMobile(mob) {
+  return /^[6-9]\d{9}$/.test(mob);
+}
+
+function showMessage(msg, isError) {
+  messageDiv.textContent = msg;
+  messageDiv.className = isError ? "error mb" : "success mb";
+}
+
+function sendOtp(mobile) {
+  // Generate random 4-digit OTP
+  currentOtp = ('' + Math.floor(1000 + Math.random() * 9000));
+  // In a real app, send to SMS provider here.
+  showMessage("OTP sent: " + currentOtp + " (demo only)", false);
+}
+
+mobileForm.onsubmit = function(ev) {
+  ev.preventDefault();
+  const mobile = document.getElementById("mobileInput").value.trim();
+  if (!validateMobile(mobile)) {
+    showMessage("Please enter a valid 10-digit mobile number starting with 6-9.", true);
+    return;
+  }
+  if (!findUserByMobile(mobile)) {
+    showMessage("User not found! Please register first (see below code for storage).", true);
+    return;
+  }
+  currentMobile = mobile;
+  enterOtpStep();
+  sendOtp(mobile);
+};
+
+function enterOtpStep() {
+  mobileStep.classList.add("hidden");
+  otpStep.classList.remove("hidden");
+  document.getElementById("otpInput").value = '';
+  enteredMobileSpan.textContent = currentMobile;
+  showMessage("OTP sent to your mobile.", false);
+}
+
+otpForm.onsubmit = function(ev) {
+  ev.preventDefault();
+  const enteredOtp = document.getElementById("otpInput").value.trim();
+  if (enteredOtp === currentOtp) {
+    showMessage("Login successful! User " + currentMobile + " authenticated.", false);
+    // Optionally set session/user in localStorage
+    localStorage.setItem("currentUser", currentMobile);
+  } else {
+    showMessage("Wrong OTP, please try again.", true);
+  }
+};
+
+resendBtn.onclick = function() {
+  sendOtp(currentMobile);
+};
+
+</script>
+</body>
+</html>
