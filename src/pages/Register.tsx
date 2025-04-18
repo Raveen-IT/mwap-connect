@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
@@ -19,6 +18,7 @@ import { generateWorkerId, generateOTP } from "@/utils/id-generator";
 import { addUser, setCurrentUser, getUserByMobile, getUserByAadhaar } from "@/utils/storage";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { User, Gender, WorkingType } from "@/types/user";
+import { sendOtpSms } from "@/utils/sendOtpSms";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
 
@@ -37,11 +37,8 @@ const Register = () => {
     email: "",
   });
   
-  // OTP verification states
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
-  
-  // For displaying user ID after successful registration
   const [userId, setUserId] = useState("");
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,14 +82,12 @@ const Register = () => {
       return false;
     }
     
-    // Check if mobile number already exists
     const existingUserByMobile = getUserByMobile(formData.mobile);
     if (existingUserByMobile) {
       toast.error("This mobile number is already registered");
       return false;
     }
     
-    // Check if Aadhaar number already exists
     const existingUserByAadhaar = getUserByAadhaar(formData.aadhaarNumber);
     if (existingUserByAadhaar) {
       toast.error("This Aadhaar number is already registered");
@@ -102,7 +97,7 @@ const Register = () => {
     return true;
   };
 
-  const handleDetailsSubmit = (e: React.FormEvent) => {
+  const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateDetailsForm()) {
@@ -111,16 +106,17 @@ const Register = () => {
     
     setLoading(true);
     
-    // Generate OTP
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
-    
-    // Simulate sending OTP
-    setTimeout(() => {
-      toast.success(`OTP sent to your mobile: ${newOtp}`);
+
+    const result = await sendOtpSms(formData.mobile as string, newOtp);
+    if (result.success) {
+      toast.success("OTP sent to your mobile.");
       setStep('verification');
-      setLoading(false);
-    }, 1500);
+    } else {
+      toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+    }
+    setLoading(false);
   };
 
   const handleVerificationSubmit = (e: React.FormEvent) => {
@@ -138,11 +134,9 @@ const Register = () => {
     
     setLoading(true);
     
-    // Generate a unique ID
     const newUserId = generateWorkerId();
     setUserId(newUserId);
     
-    // Create new user object
     const newUser: User = {
       id: newUserId,
       name: formData.name as string,
@@ -157,9 +151,7 @@ const Register = () => {
       isVerified: true,
     };
     
-    // Simulate API call
     setTimeout(() => {
-      // Save user to local storage
       addUser(newUser);
       setCurrentUser(newUser);
       

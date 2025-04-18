@@ -18,6 +18,7 @@ import { generateWorkerId, generateOTP } from "@/utils/id-generator";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { addUser, getUserByMobile, getUserByAadhaar, setCurrentUser } from "@/utils/storage";
 import { supabase } from "@/integrations/supabase/client";
+import { sendOtpSms } from "@/utils/sendOtpSms";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
 
@@ -36,11 +37,8 @@ export const RegistrationForm = () => {
     email: "",
   });
   
-  // OTP verification states
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
-  
-  // For displaying user ID after successful registration
   const [userId, setUserId] = useState("");
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,14 +82,12 @@ export const RegistrationForm = () => {
       return false;
     }
     
-    // Check if mobile number already exists
     const existingUserByMobile = getUserByMobile(formData.mobile);
     if (existingUserByMobile) {
       toast.error("This mobile number is already registered");
       return false;
     }
     
-    // Check if Aadhaar number already exists
     const existingUserByAadhaar = getUserByAadhaar(formData.aadhaarNumber);
     if (existingUserByAadhaar) {
       toast.error("This Aadhaar number is already registered");
@@ -109,17 +105,17 @@ export const RegistrationForm = () => {
     }
     
     setLoading(true);
-    
-    // Generate OTP
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
-    
-    // Simulate sending OTP
-    setTimeout(() => {
-      toast.success(`OTP sent to your mobile: ${newOtp}`);
+
+    const result = await sendOtpSms(formData.mobile as string, newOtp);
+    if (result.success) {
+      toast.success("OTP sent to your mobile.");
       setStep('verification');
-      setLoading(false);
-    }, 1500);
+    } else {
+      toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+    }
+    setLoading(false);
   };
 
   const handleVerificationSubmit = async (e: React.FormEvent) => {
@@ -138,11 +134,9 @@ export const RegistrationForm = () => {
     setLoading(true);
     
     try {
-      // Generate a unique ID
       const newUserId = generateWorkerId();
       setUserId(newUserId);
       
-      // Insert user data into Supabase
       const { error } = await supabase
         .from('user_data')
         .insert({

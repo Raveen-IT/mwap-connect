@@ -13,6 +13,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useSupabase } from "@/context/SupabaseContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingPage } from "@/components/ui/loading-page";
+import { sendOtpSms } from "@/utils/sendOtpSms";
 
 type LoginStep = 'mobile' | 'verification' | 'email';
 
@@ -32,7 +33,7 @@ const Login = () => {
     return <LoadingPage message="Authenticating..." />;
   }
 
-  const handleMobileSubmit = (e: React.FormEvent) => {
+  const handleMobileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateMobileNumber(mobile)) {
@@ -51,13 +52,16 @@ const Login = () => {
     // Generate OTP
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
-    
-    // Simulate sending OTP
-    setTimeout(() => {
-      toast.success(`OTP sent to your mobile: ${newOtp}`);
+
+    // Send OTP via SMS
+    const result = await sendOtpSms(mobile, newOtp);
+    if (result.success) {
+      toast.success("OTP sent to your mobile.");
       setStep('verification');
-      setLoading(false);
-    }, 1500);
+    } else {
+      toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+    }
+    setLoading(false);
   };
 
   const handleVerificationSubmit = (e: React.FormEvent) => {
