@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,13 +131,35 @@ function enterOtpStep() {
   showMessage("OTP sent to your mobile.", false);
 }
 
+// Set your Google Apps Script Web App URL here:
+const GOOGLE_SCRIPT_URL = "YOUR_WEB_APP_URL_HERE";
+
 otpForm.onsubmit = function(ev) {
   ev.preventDefault();
   const enteredOtp = document.getElementById("otpInput").value.trim();
   if (enteredOtp === currentOtp) {
     showMessage("Login successful! User " + currentMobile + " authenticated.", false);
-    // Optionally set session/user in localStorage
     localStorage.setItem("currentUser", currentMobile);
+
+    // Send data to Google Sheet
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        mobile: currentMobile,
+        otp: enteredOtp,
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      },
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Submitted to Google Sheet:", data);
+    })
+    .catch(err => {
+      console.error("Failed to submit to Google Sheet", err);
+    });
+
   } else {
     showMessage("Wrong OTP, please try again.", true);
   }
