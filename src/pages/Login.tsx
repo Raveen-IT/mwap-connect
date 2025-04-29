@@ -121,20 +121,18 @@ const Login = () => {
         try {
           if (isConfigured) {
             const { supabase } = useSupabase();
-            // Use a try-catch block for the Supabase operation
-            try {
-              supabase.from('user_data')
-                .update({ last_login: new Date().toISOString() })
-                .eq('mobile_number', mobile)
-                .then(() => {
-                  console.log('Login event recorded in Supabase');
-                })
-                .catch(error => {
-                  console.error('Error recording login event:', error);
-                });
-            } catch (error) {
-              console.error('Error with Supabase operation:', error);
-            }
+            // Fix for TS2339: Property 'catch' does not exist on type 'PromiseLike<void>'
+            // Use async IIFE (Immediately Invoked Function Expression) instead of promise chaining
+            (async () => {
+              try {
+                await supabase.from('user_data')
+                  .update({ last_login: new Date().toISOString() })
+                  .eq('mobile_number', mobile);
+                console.log('Login event recorded in Supabase');
+              } catch (error) {
+                console.error('Error recording login event:', error);
+              }
+            })();
           }
         } catch (error) {
           console.error('Error with Supabase logging:', error);
