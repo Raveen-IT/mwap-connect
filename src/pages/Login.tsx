@@ -55,28 +55,41 @@ const Login = () => {
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
 
-    // Send OTP via SMS
-    const result = await sendOtpSms(mobile, newOtp);
-    if (result.success) {
-      toast.success("OTP sent to your mobile.");
-      setStep('verification');
-    } else {
-      toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+    try {
+      // Send OTP via SMS
+      const result = await sendOtpSms(mobile, newOtp);
+      if (result.success) {
+        toast.success("OTP sent to your mobile.");
+        setStep('verification');
+      } else {
+        toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast.error("Failed to send OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleResendOtp = async () => {
     setLoading(true);
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
-    const result = await sendOtpSms(mobile, newOtp);
-    if (result.success) {
-      toast.success("A new OTP has been sent to your mobile.");
-    } else {
-      toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+    
+    try {
+      const result = await sendOtpSms(mobile, newOtp);
+      if (result.success) {
+        toast.success("A new OTP has been sent to your mobile.");
+      } else {
+        toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+      }
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+      toast.error("Failed to resend OTP. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleVerificationSubmit = (e: React.FormEvent) => {
@@ -107,17 +120,21 @@ const Login = () => {
         // Also store login event to Supabase if possible
         try {
           if (isConfigured) {
-            // Log login event to user_data table
             const { supabase } = useSupabase();
-            supabase.from('user_data')
-              .update({ last_login: new Date().toISOString() })
-              .eq('mobile_number', mobile)
-              .then(() => {
-                console.log('Login event recorded in Supabase');
-              })
-              .catch(error => {
-                console.error('Error recording login event:', error);
-              });
+            // Use a try-catch block for the Supabase operation
+            try {
+              supabase.from('user_data')
+                .update({ last_login: new Date().toISOString() })
+                .eq('mobile_number', mobile)
+                .then(() => {
+                  console.log('Login event recorded in Supabase');
+                })
+                .catch(error => {
+                  console.error('Error recording login event:', error);
+                });
+            } catch (error) {
+              console.error('Error with Supabase operation:', error);
+            }
           }
         } catch (error) {
           console.error('Error with Supabase logging:', error);
@@ -146,8 +163,9 @@ const Login = () => {
       await signIn(email, password);
       toast.success("Login successful!");
       navigate('/dashboard');
-    } catch (error) {
-      // Error is handled in the signIn function
+    } catch (error: any) {
+      // Error is handled in the signIn function but we catch it here too
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
