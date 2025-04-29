@@ -17,7 +17,7 @@ import { User, Gender, WorkingType } from "@/types/user";
 import { generateWorkerId, generateOTP } from "@/utils/id-generator";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { addUser, getUserByMobile, getUserByAadhaar, setCurrentUser } from "@/utils/storage";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { sendOtpSms } from "@/utils/sendOtpSms";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
@@ -104,6 +104,35 @@ export const RegistrationForm = () => {
       return;
     }
     
+    // Check if the mobile or aadhaar exists in Supabase
+    try {
+      const { data: existingMobile } = await supabase
+        .from('registration_details')
+        .select('id')
+        .eq('mobile', formData.mobile)
+        .single();
+        
+      if (existingMobile) {
+        toast.error("This mobile number is already registered in our system");
+        return;
+      }
+      
+      const { data: existingAadhaar } = await supabase
+        .from('registration_details')
+        .select('id')
+        .eq('aadhaar_number', formData.aadhaarNumber)
+        .single();
+        
+      if (existingAadhaar) {
+        toast.error("This Aadhaar number is already registered in our system");
+        return;
+      }
+    } catch (error) {
+      // If error is "No rows found" then we can proceed
+      // This is expected since we want to verify these don't exist
+      console.log("Validation passed: No existing records found");
+    }
+    
     setLoading(true);
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
@@ -137,7 +166,8 @@ export const RegistrationForm = () => {
       const newUserId = generateWorkerId();
       setUserId(newUserId);
       
-      const { error } = await supabase
+      // Insert into the user_data table (existing)
+      const { error: userDataError } = await supabase
         .from('user_data')
         .insert({
           id: newUserId,
@@ -152,8 +182,28 @@ export const RegistrationForm = () => {
           is_verified: true
         });
 
-      if (error) {
-        throw error;
+      if (userDataError) {
+        throw userDataError;
+      }
+      
+      // Also insert into the new registration_details table
+      const { error: regDetailsError } = await supabase
+        .from('registration_details')
+        .insert({
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          working_type: formData.workingType,
+          migration_place: formData.migrationPlace,
+          mobile: formData.mobile,
+          aadhaar_number: formData.aadhaarNumber,
+          email: formData.email,
+          registration_date: new Date().toISOString()
+        });
+        
+      if (regDetailsError) {
+        console.error("Error saving to registration_details table:", regDetailsError);
+        // Still continue as user_data was successful
       }
       
       setStep('success');

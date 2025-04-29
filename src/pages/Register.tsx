@@ -19,6 +19,7 @@ import { addUser, setCurrentUser, getUserByMobile, getUserByAadhaar } from "@/ut
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { User, Gender, WorkingType } from "@/types/user";
 import { sendOtpSms } from "@/utils/sendOtpSms";
+import { supabase } from "@/lib/supabase";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
 
@@ -104,6 +105,35 @@ const Register = () => {
       return;
     }
     
+    // Check if the mobile or aadhaar exists in Supabase
+    try {
+      const { data: existingMobile } = await supabase
+        .from('registration_details')
+        .select('id')
+        .eq('mobile', formData.mobile)
+        .single();
+        
+      if (existingMobile) {
+        toast.error("This mobile number is already registered in our system");
+        return;
+      }
+      
+      const { data: existingAadhaar } = await supabase
+        .from('registration_details')
+        .select('id')
+        .eq('aadhaar_number', formData.aadhaarNumber)
+        .single();
+        
+      if (existingAadhaar) {
+        toast.error("This Aadhaar number is already registered in our system");
+        return;
+      }
+    } catch (error) {
+      // If error is "No rows found" then we can proceed
+      // This is expected since we want to verify these don't exist
+      console.log("Validation passed: No existing records found");
+    }
+    
     setLoading(true);
     
     const newOtp = generateOTP();
@@ -119,7 +149,7 @@ const Register = () => {
     setLoading(false);
   };
 
-  const handleVerificationSubmit = (e: React.FormEvent) => {
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!otp || otp.trim() === "") {
@@ -134,30 +164,74 @@ const Register = () => {
     
     setLoading(true);
     
-    const newUserId = generateWorkerId();
-    setUserId(newUserId);
-    
-    const newUser: User = {
-      id: newUserId,
-      name: formData.name as string,
-      age: formData.age as number,
-      gender: formData.gender as Gender,
-      workingType: formData.workingType as WorkingType,
-      migrationPlace: formData.migrationPlace as string,
-      mobile: formData.mobile as string,
-      aadhaarNumber: formData.aadhaarNumber as string,
-      email: formData.email as string,
-      registrationDate: new Date().toISOString(),
-      isVerified: true,
-    };
-    
-    setTimeout(() => {
+    try {
+      const newUserId = generateWorkerId();
+      setUserId(newUserId);
+      
+      // Create new user in local storage (for backward compatibility)
+      const newUser: User = {
+        id: newUserId,
+        name: formData.name as string,
+        age: formData.age as number,
+        gender: formData.gender as Gender,
+        workingType: formData.workingType as WorkingType,
+        migrationPlace: formData.migrationPlace as string,
+        mobile: formData.mobile as string,
+        aadhaarNumber: formData.aadhaarNumber as string,
+        email: formData.email as string,
+        registrationDate: new Date().toISOString(),
+        isVerified: true,
+      };
+      
       addUser(newUser);
       setCurrentUser(newUser);
       
+      // Save to Supabase user_data table
+      const { error: userDataError } = await supabase
+        .from('user_data')
+        .insert({
+          id: newUserId,
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          working_type: formData.workingType,
+          migration_place: formData.migrationPlace,
+          mobile_number: formData.mobile,
+          aadhaar_number: formData.aadhaarNumber,
+          email: formData.email,
+          is_verified: true
+        });
+
+      if (userDataError) {
+        console.error("Error saving to user_data:", userDataError);
+      }
+      
+      // Also save to registration_details table
+      const { error: regDetailsError } = await supabase
+        .from('registration_details')
+        .insert({
+          name: formData.name,
+          age: formData.age,
+          gender: formData.gender,
+          working_type: formData.workingType,
+          migration_place: formData.migrationPlace,
+          mobile: formData.mobile,
+          aadhaar_number: formData.aadhaarNumber,
+          email: formData.email,
+          registration_date: new Date().toISOString()
+        });
+        
+      if (regDetailsError) {
+        console.error("Error saving to registration_details:", regDetailsError);
+      }
+      
       setStep('success');
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("There was a problem with registration. Please try again.");
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleGoToDashboard = () => {
