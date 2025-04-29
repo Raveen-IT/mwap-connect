@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Phone, LogIn, Key, AlertCircle } from "lucide-react";
+import { Phone, LogIn, Key, AlertCircle, Mail } from "lucide-react";
 import { validateMobileNumber } from "@/utils/form-validators";
 import { getUserByMobile, setCurrentUser } from "@/utils/storage";
 import { generateOTP } from "@/utils/id-generator";
@@ -14,12 +14,14 @@ import { useSupabase } from "@/context/SupabaseContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingPage } from "@/components/ui/loading-page";
 import { sendOtpSms } from "@/utils/sendOtpSms";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type LoginStep = 'mobile' | 'verification' | 'email';
 
 const Login = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<LoginStep>('mobile');
+  const [activeTab, setActiveTab] = useState<string>("mobile");
   const [loading, setLoading] = useState(false);
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -102,6 +104,25 @@ const Login = () => {
         // Dispatch storage event to notify other components
         window.dispatchEvent(new Event("storage"));
         
+        // Also store login event to Supabase if possible
+        try {
+          if (isConfigured) {
+            // Log login event to user_data table
+            const { supabase } = useSupabase();
+            supabase.from('user_data')
+              .update({ last_login: new Date().toISOString() })
+              .eq('mobile_number', mobile)
+              .then(() => {
+                console.log('Login event recorded in Supabase');
+              })
+              .catch(error => {
+                console.error('Error recording login event:', error);
+              });
+          }
+        } catch (error) {
+          console.error('Error with Supabase logging:', error);
+        }
+        
         toast.success("Login successful!");
         navigate('/dashboard');
       } else {
@@ -123,6 +144,7 @@ const Login = () => {
     
     try {
       await signIn(email, password);
+      toast.success("Login successful!");
       navigate('/dashboard');
     } catch (error) {
       // Error is handled in the signIn function
@@ -131,11 +153,10 @@ const Login = () => {
     }
   };
 
-  const toggleLoginMethod = () => {
-    if (step === 'mobile' || step === 'verification') {
-      setStep('email');
-    } else {
-      setStep('mobile');
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "mobile") {
+      setStep("mobile");
     }
   };
 
@@ -152,169 +173,286 @@ const Login = () => {
 
           <div className="w-full max-w-md mx-auto">
             {isConfigured && (
-              <div className="mb-6">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={toggleLoginMethod}
-                  className="w-full"
-                >
-                  {step === 'email' ? 'Login with Mobile Number' : 'Login with Email'}
-                </Button>
-              </div>
+              <Tabs
+                defaultValue="mobile"
+                value={activeTab} 
+                onValueChange={handleTabChange}
+                className="mb-6"
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="mobile" className="flex items-center gap-1">
+                    <Phone className="h-4 w-4" /> Mobile OTP
+                  </TabsTrigger>
+                  <TabsTrigger value="email" className="flex items-center gap-1">
+                    <Mail className="h-4 w-4" /> Email
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="mobile" className="mt-4">
+                  {step === 'mobile' && (
+                    <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <LogIn className="h-6 w-6" /> {t("navbar.login")}
+                      </h2>
+                      <form onSubmit={handleMobileSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="mobile" className="flex items-center gap-1">
+                            <Phone className="h-4 w-4" /> {t("login.mobile")}
+                          </Label>
+                          <Input
+                            id="mobile"
+                            value={mobile}
+                            onChange={(e) => setMobile(e.target.value)}
+                            placeholder="Enter your 10-digit mobile number"
+                            required
+                            autoFocus
+                          />
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          disabled={loading}
+                          className="w-full"
+                        >
+                          {loading ? "Sending OTP..." : t("login.continueBtn")}
+                        </Button>
+                        
+                        <div className="text-center pt-2">
+                          <p className="text-sm text-muted-foreground">
+                            {t("login.accountQuestion")}{" "}
+                            <a 
+                              href="/register" 
+                              className="text-primary hover:underline font-medium"
+                            >
+                              {t("login.registerLink")}
+                            </a>
+                          </p>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                  
+                  {step === 'verification' && (
+                    <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                        <Key className="h-6 w-6" /> {t("login.otpVerification")}
+                      </h2>
+                      <p className="mb-6 text-muted-foreground">
+                        {t("login.enterOTP")} {mobile}
+                      </p>
+                      
+                      <form onSubmit={handleVerificationSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="otp">Enter OTP</Label>
+                          <Input
+                            id="otp"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            placeholder={t("login.otpPlaceholder")}
+                            maxLength={4}
+                            autoFocus
+                            required
+                          />
+                        </div>
+                        
+                        <div className="text-center text-sm">
+                          <button 
+                            type="button" 
+                            className="text-primary hover:underline"
+                            onClick={handleResendOtp}
+                            disabled={loading}
+                          >
+                            {loading ? "Resending OTP..." : t("login.resendOTP")}
+                          </button>
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          disabled={loading}
+                          className="w-full"
+                        >
+                          {loading ? "Verifying..." : t("login.loginBtn")}
+                        </Button>
+
+                        <div className="text-center pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setStep('mobile')}
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Back to mobile entry
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="email" className="mt-4">
+                  <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                      <Mail className="h-6 w-6" /> Email Login
+                    </h2>
+                    <form onSubmit={handleEmailSubmit} className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email"
+                          required
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Enter your password"
+                          required
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full"
+                      >
+                        {loading ? "Logging in..." : "Log in"}
+                      </Button>
+                      
+                      <div className="text-center pt-2">
+                        <p className="text-sm text-muted-foreground">
+                          {t("login.accountQuestion")}{" "}
+                          <a 
+                            href="/register" 
+                            className="text-primary hover:underline font-medium"
+                          >
+                            {t("login.registerLink")}
+                          </a>
+                        </p>
+                      </div>
+                    </form>
+                  </div>
+                </TabsContent>
+              </Tabs>
             )}
             
             {!isConfigured && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Supabase Not Connected</AlertTitle>
-                <AlertDescription>
-                  Supabase integration is not configured. Please connect via the Lovable interface.
-                  Login with mobile is available as a fallback.
-                </AlertDescription>
-              </Alert>
-            )}
+              <>
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Supabase Not Connected</AlertTitle>
+                  <AlertDescription>
+                    Supabase integration is not configured. Please connect via the Lovable interface.
+                    Login with mobile is available as a fallback.
+                  </AlertDescription>
+                </Alert>
 
-            {step === 'mobile' && (
-              <div className="glass-effect rounded-xl p-8 animate-fade-up">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <LogIn className="h-6 w-6" /> {t("navbar.login")}
-                </h2>
-                <form onSubmit={handleMobileSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile" className="flex items-center gap-1">
-                      <Phone className="h-4 w-4" /> {t("login.mobile")}
-                    </Label>
-                    <Input
-                      id="mobile"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      placeholder="Enter your 10-digit mobile number"
-                      required
-                      autoFocus
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    {loading ? "Sending OTP..." : t("login.continueBtn")}
-                  </Button>
-                  
-                  <div className="text-center pt-2">
-                    <p className="text-sm text-muted-foreground">
-                      {t("login.accountQuestion")}{" "}
-                      <a 
-                        href="/register" 
-                        className="text-primary hover:underline font-medium"
+                {step === 'mobile' && (
+                  <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                      <LogIn className="h-6 w-6" /> {t("navbar.login")}
+                    </h2>
+                    <form onSubmit={handleMobileSubmit} className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="mobile" className="flex items-center gap-1">
+                          <Phone className="h-4 w-4" /> {t("login.mobile")}
+                        </Label>
+                        <Input
+                          id="mobile"
+                          value={mobile}
+                          onChange={(e) => setMobile(e.target.value)}
+                          placeholder="Enter your 10-digit mobile number"
+                          required
+                          autoFocus
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full"
                       >
-                        {t("login.registerLink")}
-                      </a>
-                    </p>
+                        {loading ? "Sending OTP..." : t("login.continueBtn")}
+                      </Button>
+                      
+                      <div className="text-center pt-2">
+                        <p className="text-sm text-muted-foreground">
+                          {t("login.accountQuestion")}{" "}
+                          <a 
+                            href="/register" 
+                            className="text-primary hover:underline font-medium"
+                          >
+                            {t("login.registerLink")}
+                          </a>
+                        </p>
+                      </div>
+                    </form>
                   </div>
-                </form>
-              </div>
-            )}
-            
-            {step === 'verification' && (
-              <div className="glass-effect rounded-xl p-8 animate-fade-up">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <Key className="h-6 w-6" /> {t("login.otpVerification")}
-                </h2>
-                <p className="mb-6 text-muted-foreground">
-                  {t("login.enterOTP")} {mobile}
-                </p>
+                )}
                 
-                <form onSubmit={handleVerificationSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="otp">Enter OTP</Label>
-                    <Input
-                      id="otp"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder={t("login.otpPlaceholder")}
-                      maxLength={4}
-                      autoFocus
-                      required
-                    />
-                  </div>
-                  
-                  <div className="text-center text-sm">
-                    <button 
-                      type="button" 
-                      className="text-primary hover:underline"
-                      onClick={handleResendOtp}
-                      disabled={loading}
-                    >
-                      {loading ? "Resending OTP..." : t("login.resendOTP")}
-                    </button>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    {loading ? "Verifying..." : t("login.loginBtn")}
-                  </Button>
-                </form>
-              </div>
-            )}
-            
-            {step === 'email' && isConfigured && (
-              <div className="glass-effect rounded-xl p-8 animate-fade-up">
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                  <LogIn className="h-6 w-6" /> Email Login
-                </h2>
-                <form onSubmit={handleEmailSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      required
-                      autoFocus
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      required
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    disabled={loading}
-                    className="w-full"
-                  >
-                    {loading ? "Logging in..." : "Log in"}
-                  </Button>
-                  
-                  <div className="text-center pt-2">
-                    <p className="text-sm text-muted-foreground">
-                      {t("login.accountQuestion")}{" "}
-                      <a 
-                        href="/register" 
-                        className="text-primary hover:underline font-medium"
-                      >
-                        {t("login.registerLink")}
-                      </a>
+                {step === 'verification' && (
+                  <div className="glass-effect rounded-xl p-8 animate-fade-up">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                      <Key className="h-6 w-6" /> {t("login.otpVerification")}
+                    </h2>
+                    <p className="mb-6 text-muted-foreground">
+                      {t("login.enterOTP")} {mobile}
                     </p>
+                    
+                    <form onSubmit={handleVerificationSubmit} className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="otp">Enter OTP</Label>
+                        <Input
+                          id="otp"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          placeholder={t("login.otpPlaceholder")}
+                          maxLength={4}
+                          autoFocus
+                          required
+                        />
+                      </div>
+                      
+                      <div className="text-center text-sm">
+                        <button 
+                          type="button" 
+                          className="text-primary hover:underline"
+                          onClick={handleResendOtp}
+                          disabled={loading}
+                        >
+                          {loading ? "Resending OTP..." : t("login.resendOTP")}
+                        </button>
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full"
+                      >
+                        {loading ? "Verifying..." : t("login.loginBtn")}
+                      </Button>
+
+                      <div className="text-center pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setStep('mobile')}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          Back to mobile entry
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                </form>
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>
