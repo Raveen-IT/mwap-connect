@@ -12,6 +12,7 @@ interface SupabaseContextType {
   signUp: (email: string, password: string, userData: any) => Promise<void>;
   signOut: () => Promise<void>;
   isConfigured: boolean;
+  supabase: typeof supabase; // Add supabase client to the context type
 }
 
 const SupabaseContext = createContext<SupabaseContextType | undefined>(undefined);
@@ -162,6 +163,7 @@ export function SupabaseProvider({ children }: SupabaseProviderProps) {
     signUp,
     signOut,
     isConfigured,
+    supabase, // Add supabase client to the context value
   };
 
   return (
