@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
@@ -137,9 +138,11 @@ export const RegistrationForm = () => {
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
 
+    // Simulate OTP sending
     const result = await sendOtpSms(formData.mobile as string, newOtp);
     if (result.success) {
-      toast.success("OTP sent to your mobile.");
+      toast.success("OTP sent to your mobile (simulated)");
+      toast.info(`For testing, your OTP is: ${newOtp}`);
       setStep('verification');
     } else {
       toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
@@ -364,6 +367,13 @@ export const RegistrationForm = () => {
             Please enter the OTP sent to your mobile number {formData.mobile}
           </p>
           
+          <div className="mb-6 p-4 bg-primary/10 rounded-lg text-center">
+            <p className="font-medium">Test OTP: {generatedOtp}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This is displayed for testing purposes only
+            </p>
+          </div>
+          
           <form onSubmit={handleVerificationSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="otp">Enter OTP</Label>
@@ -383,7 +393,7 @@ export const RegistrationForm = () => {
                 type="button" 
                 className="text-primary hover:underline"
                 onClick={() => {
-                  toast.success(`OTP resent: ${generatedOtp}`);
+                  toast.success(`OTP resent (simulated): ${generatedOtp}`);
                 }}
               >
                 Didn't receive OTP? Resend

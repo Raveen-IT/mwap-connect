@@ -56,10 +56,11 @@ const Login = () => {
     setGeneratedOtp(newOtp);
 
     try {
-      // Send OTP via SMS
+      // Simulate OTP sending
       const result = await sendOtpSms(mobile, newOtp);
       if (result.success) {
-        toast.success("OTP sent to your mobile.");
+        toast.success("OTP sent to your mobile (simulated)");
+        toast.info(`For testing, your OTP is: ${newOtp}`);
         setStep('verification');
       } else {
         toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
@@ -78,9 +79,11 @@ const Login = () => {
     setGeneratedOtp(newOtp);
     
     try {
+      // Simulate OTP sending
       const result = await sendOtpSms(mobile, newOtp);
       if (result.success) {
-        toast.success("A new OTP has been sent to your mobile.");
+        toast.success("A new OTP has been sent to your mobile (simulated)");
+        toast.info(`For testing, your new OTP is: ${newOtp}`);
       } else {
         toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
       }
@@ -257,6 +260,13 @@ const Login = () => {
                         {t("login.enterOTP")} {mobile}
                       </p>
                       
+                      <div className="mb-6 p-4 bg-primary/10 rounded-lg text-center">
+                        <p className="font-medium">Test OTP: {generatedOtp}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          This is displayed for testing purposes only
+                        </p>
+                      </div>
+                      
                       <form onSubmit={handleVerificationSubmit} className="space-y-6">
                         <div className="space-y-2">
                           <Label htmlFor="otp">Enter OTP</Label>
@@ -422,6 +432,13 @@ const Login = () => {
                     <p className="mb-6 text-muted-foreground">
                       {t("login.enterOTP")} {mobile}
                     </p>
+                    
+                    <div className="mb-6 p-4 bg-primary/10 rounded-lg text-center">
+                      <p className="font-medium">Test OTP: {generatedOtp}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This is displayed for testing purposes only
+                      </p>
+                    </div>
                     
                     <form onSubmit={handleVerificationSubmit} className="space-y-6">
                       <div className="space-y-2">

@@ -1,23 +1,18 @@
 
-import { supabase } from "@/lib/supabase";
-
 /**
- * Sends an OTP SMS to the specified mobile number via the Supabase edge function.
+ * Simulates sending an OTP SMS to the specified mobile number.
  * @param mobile - The phone number (string, 10-digits for India).
  * @param otp - OTP code to send (string).
  * @returns Promise<{ success: boolean, error?: string }>
  */
 export async function sendOtpSms(mobile: string, otp: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const { data, error } = await supabase.functions.invoke("send-otp-sms", {
-      body: { to: mobile, otp },
-    });
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (error) {
-      console.error("Error invoking send-otp-sms function:", error);
-      return { success: false, error: error.message };
-    }
+    console.log(`[SIMULATED SMS] OTP code ${otp} sent to ${mobile}`);
     
+    // In a real implementation, this would call an API to send the actual SMS
     return { success: true };
   } catch (err: any) {
     console.error("Exception in sendOtpSms:", err);
