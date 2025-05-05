@@ -10,10 +10,12 @@ import { User } from "@/types/user";
 import { toast } from "sonner";
 import { CalendarDays, FileText, MessageSquare, User as UserIcon } from "lucide-react";
 import { ProfileCard } from "@/components/profile/ProfileCard";
+import { supabase } from "@/lib/supabase";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -25,12 +27,78 @@ const Dashboard = () => {
     }
     
     setUser(currentUser);
+    
+    // Record user login in Supabase (if possible)
+    const recordLoginActivity = async () => {
+      try {
+        await supabase.functions.invoke('record-user-login', {
+          body: { user_mobile: currentUser.mobile }
+        });
+      } catch (error) {
+        console.error("Error recording login activity:", error);
+        // Non-critical error, so we don't show a toast or redirect
+      }
+    };
+    
+    recordLoginActivity();
   }, [navigate]);
   
   const handleLogout = () => {
     clearCurrentUser();
     toast.success("You have been logged out successfully");
     navigate("/");
+  };
+
+  const handleViewSchemes = () => {
+    // Set the active tab to "schemes"
+    const schemesTab = document.querySelector('[value="schemes"]') as HTMLElement;
+    if (schemesTab) {
+      schemesTab.click();
+    }
+  };
+  
+  const handleDownloadIdCard = () => {
+    setIsLoading(true);
+    
+    // Simulate download delay
+    setTimeout(() => {
+      setIsLoading(false);
+      
+      // Create a simple text representation of the ID card
+      if (user) {
+        const idCardContent = `
+MIGRANT WORKER ASSISTANCE PORTAL
+---------------------------------------
+WORKER ID: ${user.id}
+NAME: ${user.name}
+AGE: ${user.age}
+GENDER: ${user.gender}
+MOBILE: ${user.mobile}
+WORKER TYPE: ${user.workingType}
+LOCATION: ${user.migrationPlace}
+---------------------------------------
+Registration Date: ${new Date(user.registrationDate).toLocaleDateString('en-IN')}
+Status: ${user.isVerified ? "Verified" : "Pending Verification"}
+        `.trim();
+        
+        // Create a blob and download it
+        const blob = new Blob([idCardContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `MWAP_ID_${user.id}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success("ID Card downloaded successfully");
+      }
+    }, 1500);
+  };
+  
+  const handleAskQuestions = () => {
+    navigate("/chatbot");
   };
 
   if (!user) {
@@ -113,7 +181,7 @@ const Dashboard = () => {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" size="sm" className="w-full" onClick={() => navigate("/chatbot")}>
+                      <Button variant="outline" size="sm" className="w-full" onClick={handleAskQuestions}>
                         Get Help
                       </Button>
                     </CardFooter>
@@ -125,15 +193,31 @@ const Dashboard = () => {
                       <CardDescription>Access frequently used features</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={handleViewSchemes}
+                      >
                         <CalendarDays className="mr-2 h-4 w-4" />
                         View Available Schemes
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={handleDownloadIdCard}
+                        disabled={isLoading}
+                      >
                         <FileText className="mr-2 h-4 w-4" />
-                        Download ID Card
+                        {isLoading ? "Generating..." : "Download ID Card"}
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => navigate("/chatbot")}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full justify-start"
+                        onClick={handleAskQuestions}
+                      >
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Ask Questions
                       </Button>

@@ -24,8 +24,18 @@ serve(async (req) => {
       )
     }
     
-    // We could log this login event to a separate table if needed
-    console.log(`User with mobile ${user_mobile} logged in at ${new Date().toISOString()}`)
+    // Call the database function to record the login
+    const { error } = await supabaseClient.rpc('record_user_login', {
+      user_mobile: user_mobile
+    })
+    
+    if (error) {
+      console.error('Error calling record_user_login:', error)
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { headers: { "Content-Type": "application/json" }, status: 500 }
+      )
+    }
     
     return new Response(
       JSON.stringify({ success: true, timestamp: new Date().toISOString() }),
