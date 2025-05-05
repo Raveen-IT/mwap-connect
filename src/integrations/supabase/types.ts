@@ -9,7 +9,90 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      registration_details: {
+        Row: {
+          aadhaar_number: string
+          age: number
+          created_at: string | null
+          email: string | null
+          gender: string
+          id: string
+          migration_place: string
+          mobile: string
+          name: string
+          registration_date: string | null
+          working_type: string
+        }
+        Insert: {
+          aadhaar_number: string
+          age: number
+          created_at?: string | null
+          email?: string | null
+          gender: string
+          id?: string
+          migration_place: string
+          mobile: string
+          name: string
+          registration_date?: string | null
+          working_type: string
+        }
+        Update: {
+          aadhaar_number?: string
+          age?: number
+          created_at?: string | null
+          email?: string | null
+          gender?: string
+          id?: string
+          migration_place?: string
+          mobile?: string
+          name?: string
+          registration_date?: string | null
+          working_type?: string
+        }
+        Relationships: []
+      }
+      user_data: {
+        Row: {
+          aadhaar_number: string
+          age: number
+          created_at: string | null
+          email: string | null
+          gender: string
+          id: string
+          is_verified: boolean | null
+          migration_place: string
+          mobile_number: string
+          name: string
+          working_type: string
+        }
+        Insert: {
+          aadhaar_number: string
+          age: number
+          created_at?: string | null
+          email?: string | null
+          gender: string
+          id: string
+          is_verified?: boolean | null
+          migration_place: string
+          mobile_number: string
+          name: string
+          working_type: string
+        }
+        Update: {
+          aadhaar_number?: string
+          age?: number
+          created_at?: string | null
+          email?: string | null
+          gender?: string
+          id?: string
+          is_verified?: boolean | null
+          migration_place?: string
+          mobile_number?: string
+          name?: string
+          working_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

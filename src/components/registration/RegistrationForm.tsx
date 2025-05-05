@@ -18,7 +18,7 @@ import { User, Gender, WorkingType } from "@/types/user";
 import { generateWorkerId, generateOTP } from "@/utils/id-generator";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { addUser, getUserByMobile, getUserByAadhaar, setCurrentUser } from "@/utils/storage";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { sendOtpSms } from "@/utils/sendOtpSms";
 
 type RegistrationStep = 'details' | 'verification' | 'success';
