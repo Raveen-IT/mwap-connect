@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -29,7 +30,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { t } = useLanguage();
-  const { signIn, isConfigured } = useSupabase();
+  const { signIn, isConfigured, supabase } = useSupabase();
 
   if (loading) {
     return <LoadingPage message="Authenticating..." />;
@@ -43,19 +44,34 @@ const Login = () => {
       return;
     }
     
-    const user = getUserByMobile(mobile);
-    if (!user) {
-      toast.error("No account found with this mobile number. Please register first.");
-      return;
-    }
-    
     setLoading(true);
     
-    // Generate OTP
-    const newOtp = generateOTP();
-    setGeneratedOtp(newOtp);
-
     try {
+      // First, check if the user exists in Supabase
+      const { data: users, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('mobile_number', mobile)
+        .limit(1);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (!users || users.length === 0) {
+        // Fallback to local storage check
+        const localUser = getUserByMobile(mobile);
+        if (!localUser) {
+          toast.error("No account found with this mobile number. Please register first.");
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Generate OTP
+      const newOtp = generateOTP();
+      setGeneratedOtp(newOtp);
+
       // Simulate OTP sending
       const result = await sendOtpSms(mobile, newOtp);
       if (result.success) {
@@ -65,9 +81,9 @@ const Login = () => {
       } else {
         toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
       }
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      toast.error("Failed to send OTP. Please try again.");
+    } catch (error: any) {
+      console.error("Error checking user or sending OTP:", error);
+      toast.error(error.message || "Failed to send OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,7 +111,7 @@ const Login = () => {
     }
   };
 
-  const handleVerificationSubmit = (e: React.FormEvent) => {
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!otp || otp.trim() === "") {
@@ -110,44 +126,69 @@ const Login = () => {
     
     setLoading(true);
     
-    const user = getUserByMobile(mobile);
-    
-    // Simulate API call
-    setTimeout(() => {
-      if (user) {
-        setCurrentUser(user);
+    try {
+      // First try to find the user in Supabase
+      const { data: users, error } = await supabase
+        .from('user_data')
+        .select('*')
+        .eq('mobile_number', mobile)
+        .limit(1);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (users && users.length > 0) {
+        // User found in Supabase
+        const supabaseUser = users[0];
         
-        // Dispatch storage event to notify other components
-        window.dispatchEvent(new Event("storage"));
+        // Convert Supabase user to local user format for compatibility
+        const localUserFormat = {
+          id: supabaseUser.id,
+          name: supabaseUser.name,
+          age: supabaseUser.age,
+          gender: supabaseUser.gender as any,
+          workingType: supabaseUser.working_type as any,
+          migrationPlace: supabaseUser.migration_place,
+          mobile: supabaseUser.mobile_number,
+          aadhaarNumber: supabaseUser.aadhaar_number,
+          email: supabaseUser.email || undefined,
+          isVerified: supabaseUser.is_verified || false,
+          registrationDate: supabaseUser.created_at || new Date().toISOString()
+        };
         
-        // Also store login event to Supabase if possible
+        // Set this user as the current user
+        setCurrentUser(localUserFormat);
+        
+        // Update last login time in Supabase (no need to await)
         try {
-          if (isConfigured) {
-            const { supabase } = useSupabase();
-            // Fix for TS2339: Property 'catch' does not exist on type 'PromiseLike<void>'
-            // Use async IIFE (Immediately Invoked Function Expression) instead of promise chaining
-            (async () => {
-              try {
-                await supabase.from('user_data')
-                  .update({ last_login: new Date().toISOString() })
-                  .eq('mobile_number', mobile);
-                console.log('Login event recorded in Supabase');
-              } catch (error) {
-                console.error('Error recording login event:', error);
-              }
-            })();
-          }
-        } catch (error) {
-          console.error('Error with Supabase logging:', error);
+          // Record login event
+          await supabase.rpc('record_user_login', { user_mobile: mobile });
+        } catch (loginUpdateError) {
+          console.error('Error recording login event:', loginUpdateError);
         }
         
         toast.success("Login successful!");
         navigate('/dashboard');
       } else {
-        toast.error("An error occurred. Please try again.");
+        // Fallback to local storage
+        const localUser = getUserByMobile(mobile);
+        
+        if (localUser) {
+          setCurrentUser(localUser);
+          window.dispatchEvent(new Event("storage"));
+          toast.success("Login successful!");
+          navigate('/dashboard');
+        } else {
+          toast.error("User not found. Please register first.");
+        }
       }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message || "An error occurred. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
