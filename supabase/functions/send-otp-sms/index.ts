@@ -10,9 +10,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const VONAGE_API_KEY = Deno.env.get("VONAGE_API_KEY");
-const VONAGE_API_SECRET = Deno.env.get("VONAGE_API_SECRET");
+// Get Vonage API credentials from environment variables
+// or use the hardcoded values if environment variables are not set
+const VONAGE_API_KEY = Deno.env.get("VONAGE_API_KEY") || "da487b75";
+const VONAGE_API_SECRET = Deno.env.get("VONAGE_API_SECRET") || "q71GwNEjXBXs0dIa";
 const VONAGE_BRAND_NAME = Deno.env.get("VONAGE_BRAND_NAME") || "MWAP";
+
+console.log("Vonage API Key: ", VONAGE_API_KEY ? "Set" : "Not set");
+console.log("Vonage API Secret: ", VONAGE_API_SECRET ? "Set" : "Not set");
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -21,9 +26,9 @@ serve(async (req) => {
   }
 
   try {
-    // Make sure the required environment variables are set
+    // Make sure the required credentials are available
     if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
-      console.error("Missing Vonage environment variables");
+      console.error("Missing Vonage credentials");
       return new Response(
         JSON.stringify({ 
           error: "Vonage configuration missing. Please set VONAGE_API_KEY and VONAGE_API_SECRET" 
@@ -53,7 +58,7 @@ serve(async (req) => {
     }
 
     // Construct the request to Vonage API
-    const url = "https://api.nexmo.com/v2/sms/json";
+    const url = "https://rest.nexmo.com/sms/json";
 
     // Build request body according to Vonage API
     const data = {
@@ -65,6 +70,8 @@ serve(async (req) => {
       channel: "sms"
     };
 
+    console.log("Sending request to Vonage:", { ...data, api_secret: "[REDACTED]" });
+
     const vonageResponse = await fetch(url, {
       method: "POST",
       headers: {
@@ -74,6 +81,7 @@ serve(async (req) => {
     });
 
     const responseBody = await vonageResponse.json();
+    console.log("Vonage API response:", responseBody);
 
     if (!vonageResponse.ok) {
       console.error("Vonage API error:", responseBody);
@@ -82,8 +90,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    console.log("SMS sent successfully via Vonage:", responseBody);
 
     return new Response(
       JSON.stringify({ success: true, response: responseBody }),

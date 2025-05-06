@@ -12,6 +12,8 @@ export async function sendOtpSms(mobile: string, otp: string): Promise<{ success
     // Format phone number for Vonage (add +91 prefix for India if not present)
     const formattedMobile = mobile.startsWith("+") ? mobile : `+91${mobile}`;
     
+    console.log(`Sending OTP to ${formattedMobile}`);
+    
     // Call the Supabase edge function to send SMS
     const { data, error } = await supabase.functions.invoke('send-otp-sms', {
       body: { 
@@ -23,6 +25,11 @@ export async function sendOtpSms(mobile: string, otp: string): Promise<{ success
     if (error) {
       console.error("Error in sendOtpSms:", error);
       return { success: false, error: error.message };
+    }
+    
+    if (!data?.success) {
+      console.error("API Error in sendOtpSms:", data);
+      return { success: false, error: data?.error || "Failed to send OTP" };
     }
     
     console.log("OTP sent via Vonage:", { to: formattedMobile, success: true });
