@@ -12,6 +12,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/context/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getGeminiResponse } from "@/utils/geminiApi";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -42,12 +44,13 @@ interface StateScheme {
 
 const Chatbot = () => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hello! I'm your MWAP assistant. Please select a category below to explore benefits and schemes for migrant workers, or ask me any specific questions.",
+      content: "Hello! I'm your MWAP assistant powered by Gemini AI. Please select a category below to explore benefits and schemes for migrant workers, or ask me any specific questions.",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -307,7 +310,7 @@ const Chatbot = () => {
         ...prev,
         {
           id: "personal-welcome",
-          content: `Welcome back, ${currentUser.name}! Please select a benefit category below to explore schemes for migrant workers, or ask me any specific questions.`,
+          content: `Welcome back, ${currentUser.name}! I'm your MWAP assistant powered by Gemini AI. Please select a benefit category below to explore schemes for migrant workers, or ask me any specific questions.`,
           sender: "bot",
           timestamp: new Date(),
         }
@@ -315,7 +318,7 @@ const Chatbot = () => {
     }
   }, []);
   
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!input.trim()) return;
@@ -331,17 +334,85 @@ const Chatbot = () => {
     setInput("");
     setIsLoading(true);
     
-    setTimeout(() => {
-      const botResponse: Message = {
+    try {
+      // For category-specific queries, we can still use predefined responses
+      if (selectedCategory) {
+        const categoryContent = 
+          selectedCategory === "rights" 
+            ? `Legal Rights & Protections for Migrant Workers:\n\n${rights.join("\n\n")}`
+            : schemeCategories.find(cat => cat.id === selectedCategory)?.schemes.map(
+                scheme => `${scheme.name}: ${scheme.description}\nEligibility: ${scheme.eligibility}\nBenefits: ${scheme.benefits}`
+              ).join("\n\n");
+              
+        const userQuery = `${input} (Regarding ${selectedCategory === "rights" ? "Legal Rights & Protections" : 
+          schemeCategories.find(cat => cat.id === selectedCategory)?.name})
+          
+          Here's relevant information that might help:
+          ${categoryContent}
+          
+          Please provide a helpful response based on this information.`;
+          
+        const response = await getGeminiResponse(userQuery);
+        
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.text,
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, botResponse]);
+        
+        if (response.error) {
+          console.error("Gemini API error:", response.error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was an issue connecting to the AI assistant.",
+          });
+        }
+      } else {
+        // For general queries, use Gemini API
+        const response = await getGeminiResponse(input);
+        
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: response.text,
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, botResponse]);
+        
+        if (response.error) {
+          console.error("Gemini API error:", response.error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "There was an issue connecting to the AI assistant.",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleSendMessage:", error);
+      
+      const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: getBotResponse(input),
+        content: "I'm sorry, I encountered an error while processing your request. Please try again later.",
         sender: "bot",
         timestamp: new Date(),
       };
       
-      setMessages(prev => [...prev, botResponse]);
+      setMessages(prev => [...prev, errorMessage]);
+      
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to get response from the AI assistant.",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   return (
