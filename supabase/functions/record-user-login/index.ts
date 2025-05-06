@@ -6,7 +6,18 @@ interface WebhookPayload {
   user_mobile?: string;
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+  
   // Create a Supabase client with the Auth context
   const supabaseClient = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -20,9 +31,11 @@ serve(async (req) => {
     if (!user_mobile) {
       return new Response(
         JSON.stringify({ error: "Missing user_mobile field" }),
-        { headers: { "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       )
     }
+    
+    console.log(`Recording login for mobile: ${user_mobile}`);
     
     // Call the database function to record the login
     const { error } = await supabaseClient.rpc('record_user_login', {
@@ -33,19 +46,19 @@ serve(async (req) => {
       console.error('Error calling record_user_login:', error)
       return new Response(
         JSON.stringify({ error: error.message }),
-        { headers: { "Content-Type": "application/json" }, status: 500 }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       )
     }
     
     return new Response(
       JSON.stringify({ success: true, timestamp: new Date().toISOString() }),
-      { headers: { "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     )
   } catch (error) {
     console.error('Error in record-user-login function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { "Content-Type": "application/json" }, status: 400 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
     )
   }
 })
