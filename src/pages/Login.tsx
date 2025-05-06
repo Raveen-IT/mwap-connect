@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Phone, LogIn, Key, AlertCircle, Mail } from "lucide-react";
+import { Phone, LogIn, Key, AlertCircle, Mail, Google } from "lucide-react";
 import { validateMobileNumber } from "@/utils/form-validators";
 import { getUserByMobile, setCurrentUser } from "@/utils/storage";
 import { generateOTP } from "@/utils/id-generator";
@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingPage } from "@/components/ui/loading-page";
 import { sendOtpSms } from "@/utils/sendOtpSms";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 
 type LoginStep = 'mobile' | 'verification' | 'email';
 
@@ -163,7 +164,9 @@ const Login = () => {
         // Update last login time in Supabase (no need to await)
         try {
           // Record login event
-          await supabase.rpc('record_user_login', { user_mobile: mobile });
+          await supabase.functions.invoke('record-user-login', {
+            body: { user_mobile: mobile }
+          });
         } catch (loginUpdateError) {
           console.error('Error recording login event:', loginUpdateError);
         }
@@ -209,6 +212,35 @@ const Login = () => {
       // Error is handled in the signIn function but we catch it here too
       console.error("Login error:", error);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isConfigured) {
+      toast.error("Supabase integration is not configured. Please connect via Lovable interface.");
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard'
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Auth redirection will happen automatically
+      // No need for toast as user will be redirected away
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      toast.error(error.message || "Failed to sign in with Google. Please try again.");
       setLoading(false);
     }
   };
@@ -392,6 +424,21 @@ const Login = () => {
                         className="w-full"
                       >
                         {loading ? "Logging in..." : "Log in"}
+                      </Button>
+                      
+                      <Separator className="my-4">
+                        <span className="mx-2 text-xs text-muted-foreground">OR</span>
+                      </Separator>
+                      
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        className="w-full flex items-center gap-2 justify-center"
+                        onClick={handleGoogleSignIn}
+                        disabled={loading}
+                      >
+                        <Google className="h-4 w-4" />
+                        Sign in with Google
                       </Button>
                       
                       <div className="text-center pt-2">
