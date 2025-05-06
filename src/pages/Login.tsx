@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Phone, LogIn, Key, AlertCircle, Mail, Google } from "lucide-react";
+import { Phone, LogIn, Key, AlertCircle, Mail, Globe } from "lucide-react";
 import { validateMobileNumber } from "@/utils/form-validators";
 import { getUserByMobile, setCurrentUser } from "@/utils/storage";
 import { generateOTP } from "@/utils/id-generator";
@@ -437,7 +436,7 @@ const Login = () => {
                         onClick={handleGoogleSignIn}
                         disabled={loading}
                       >
-                        <Google className="h-4 w-4" />
+                        <Globe className="h-4 w-4" />
                         Sign in with Google
                       </Button>
                       
