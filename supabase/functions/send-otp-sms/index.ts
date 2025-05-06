@@ -1,5 +1,5 @@
 
-// Send OTP SMS Edge Function using Twilio
+// Send OTP SMS Edge Function using Vonage
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -10,9 +10,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
+const VONAGE_API_KEY = Deno.env.get("VONAGE_API_KEY");
+const VONAGE_API_SECRET = Deno.env.get("VONAGE_API_SECRET");
+const VONAGE_BRAND_NAME = Deno.env.get("VONAGE_BRAND_NAME") || "MWAP";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -22,11 +22,11 @@ serve(async (req) => {
 
   try {
     // Make sure the required environment variables are set
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      console.error("Missing Twilio environment variables");
+    if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
+      console.error("Missing Vonage environment variables");
       return new Response(
         JSON.stringify({ 
-          error: "Twilio configuration missing. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER" 
+          error: "Vonage configuration missing. Please set VONAGE_API_KEY and VONAGE_API_SECRET" 
         }),
         {
           status: 500,
@@ -46,40 +46,47 @@ serve(async (req) => {
 
     console.log(`Sending OTP ${otp} to ${to}`);
 
-    // Construct the request to Twilio
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+    // Format phone number if needed
+    let formattedNumber = to;
+    if (!to.startsWith("+")) {
+      formattedNumber = `+${to}`;
+    }
 
-    const data = new URLSearchParams({
-      To: to,
-      From: TWILIO_PHONE_NUMBER,
-      Body: `Your OTP verification code is: ${otp}`,
-    });
+    // Construct the request to Vonage API
+    const url = "https://api.nexmo.com/v2/sms/json";
 
-    const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
+    // Build request body according to Vonage API
+    const data = {
+      api_key: VONAGE_API_KEY,
+      api_secret: VONAGE_API_SECRET,
+      from: VONAGE_BRAND_NAME,
+      to: formattedNumber,
+      text: `Your OTP verification code is: ${otp}`,
+      channel: "sms"
+    };
 
-    const twilioResponse = await fetch(url, {
+    const vonageResponse = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
-      body: data.toString(),
+      body: JSON.stringify(data),
     });
 
-    const responseBody = await twilioResponse.json();
+    const responseBody = await vonageResponse.json();
 
-    if (!twilioResponse.ok) {
-      console.error("Twilio API error:", responseBody);
-      return new Response(JSON.stringify({ error: responseBody.message || "Twilio API error" }), {
+    if (!vonageResponse.ok) {
+      console.error("Vonage API error:", responseBody);
+      return new Response(JSON.stringify({ error: responseBody.message || "Vonage API error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("SMS sent successfully via Twilio:", responseBody.sid);
+    console.log("SMS sent successfully via Vonage:", responseBody);
 
     return new Response(
-      JSON.stringify({ success: true, sid: responseBody.sid }),
+      JSON.stringify({ success: true, response: responseBody }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {

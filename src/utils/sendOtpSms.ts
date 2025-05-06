@@ -2,14 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Sends an OTP SMS to the specified mobile number using Supabase Edge Function.
+ * Sends an OTP SMS to the specified mobile number using Supabase Edge Function with Vonage.
  * @param mobile - The phone number (string, 10-digits for India).
  * @param otp - OTP code to send (string).
  * @returns Promise<{ success: boolean, error?: string }>
  */
 export async function sendOtpSms(mobile: string, otp: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Format phone number for Twilio (add +91 prefix for India if not present)
+    // Format phone number for Vonage (add +91 prefix for India if not present)
     const formattedMobile = mobile.startsWith("+") ? mobile : `+91${mobile}`;
     
     // Call the Supabase edge function to send SMS
@@ -25,7 +25,7 @@ export async function sendOtpSms(mobile: string, otp: string): Promise<{ success
       return { success: false, error: error.message };
     }
     
-    console.log("OTP sent via Twilio:", { to: formattedMobile, success: true });
+    console.log("OTP sent via Vonage:", { to: formattedMobile, success: true });
     return { success: true };
   } catch (err: any) {
     console.error("Exception in sendOtpSms:", err);
