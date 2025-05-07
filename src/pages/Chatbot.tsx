@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -46,6 +47,7 @@ interface StateScheme {
 const Chatbot = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<User | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -382,14 +384,14 @@ const Chatbot = () => {
   
   return (
     <Layout>
-      <section className="section-container py-8">
-        <div className="max-w-4xl mx-auto">
-          <Card className="h-[calc(100vh-10rem)]">
-            <CardHeader>
+      <section className="section-container py-8 flex justify-center items-center min-h-[calc(100vh-10rem)]">
+        <div className="w-full max-w-4xl mx-auto">
+          <Card className="border shadow-lg">
+            <CardHeader className="border-b bg-muted/30">
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle className="text-primary">{t("chatbot.title")}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-primary text-2xl">{t("chatbot.title")}</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     {t("chatbot.subtitle")}
                   </CardDescription>
                 </div>
@@ -397,38 +399,40 @@ const Chatbot = () => {
             </CardHeader>
             
             <CardContent className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 h-full">
-                <div className="border-r p-4 hidden md:block">
-                  <h3 className="font-semibold mb-4">Select a Category</h3>
-                  <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
-                    {schemeCategories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={category.id} id={category.id} />
-                        <label htmlFor={category.id} className="flex items-center cursor-pointer">
-                          {category.icon}
-                          <span className="ml-2 text-sm">{category.name}</span>
+              <div className="grid grid-cols-1 md:grid-cols-4 h-[calc(100vh-16rem)]">
+                <div className="border-r hidden md:block bg-background/50">
+                  <div className="p-4 h-full">
+                    <h3 className="font-semibold mb-4 text-sm text-primary">Select a Category</h3>
+                    <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
+                      {schemeCategories.map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <RadioGroupItem value={category.id} id={category.id} />
+                          <label htmlFor={category.id} className="flex items-center cursor-pointer">
+                            {category.icon}
+                            <span className="ml-2 text-sm">{category.name}</span>
+                          </label>
+                        </div>
+                      ))}
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="rights" id="rights" />
+                        <label htmlFor="rights" className="flex items-center cursor-pointer">
+                          <Info className="h-5 w-5 text-red-500" />
+                          <span className="ml-2 text-sm">Legal Rights</span>
                         </label>
                       </div>
-                    ))}
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="rights" id="rights" />
-                      <label htmlFor="rights" className="flex items-center cursor-pointer">
-                        <Info className="h-5 w-5 text-red-500" />
-                        <span className="ml-2 text-sm">Legal Rights</span>
-                      </label>
-                    </div>
-                  </RadioGroup>
+                    </RadioGroup>
+                  </div>
                 </div>
                 
-                <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-[calc(100vh-18rem)]`}>
-                  <ScrollArea className="flex-1 px-4">
-                    <div className="space-y-4 py-4">
+                <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-full bg-background`}>
+                  <ScrollArea className="flex-1 p-4">
+                    <div className="space-y-4 py-2">
                       {messages.map((message) => (
                         <div
                           key={message.id}
-                          className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                          className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
                         >
-                          <div className={`flex gap-3 max-w-[80%] ${message.sender === "user" ? "flex-row-reverse" : ""}`}>
+                          <div className={`flex gap-3 max-w-[85%] ${message.sender === "user" ? "flex-row-reverse" : ""}`}>
                             {message.sender === "bot" && (
                               <Avatar className="h-8 w-8">
                                 <AvatarFallback className="bg-primary text-primary-foreground">
@@ -438,10 +442,10 @@ const Chatbot = () => {
                             )}
                             
                             <div
-                              className={`rounded-lg p-4 text-sm ${
+                              className={`rounded-xl p-4 shadow-sm text-sm ${
                                 message.sender === "user"
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-secondary"
+                                  ? "bg-primary text-primary-foreground rounded-tr-none"
+                                  : "bg-secondary rounded-tl-none"
                               }`}
                             >
                               {message.content.split("\n").map((text, i) => (
@@ -449,7 +453,7 @@ const Chatbot = () => {
                                   {text}
                                 </p>
                               ))}
-                              <div className="text-xs mt-2 opacity-70">
+                              <div className="text-xs mt-2 opacity-70 text-right">
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
                             </div>
@@ -466,14 +470,14 @@ const Chatbot = () => {
                       ))}
                       
                       {isLoading && (
-                        <div className="flex justify-start">
-                          <div className="flex gap-3 max-w-[80%]">
+                        <div className="flex justify-start animate-fade-in">
+                          <div className="flex gap-3 max-w-[85%]">
                             <Avatar className="h-8 w-8">
                               <AvatarFallback className="bg-primary text-primary-foreground">
                                 M
                               </AvatarFallback>
                             </Avatar>
-                            <div className="rounded-lg p-4 text-sm bg-secondary">
+                            <div className="rounded-xl rounded-tl-none p-4 text-sm bg-secondary shadow-sm">
                               <span className="flex gap-1">
                                 <span className="animate-pulse">●</span>
                                 <span className="animate-pulse animation-delay-100">●</span>
@@ -515,25 +519,29 @@ const Chatbot = () => {
                     </div>
                   </ScrollArea>
                   
-                  {selectedCategory && (
-                    <div className="border-t p-4 mt-auto">
-                      <h3 className="font-medium mb-3">
+                  {selectedCategory && !isMobile && (
+                    <div className="border-t p-4 mt-auto max-h-[30%]">
+                      <h3 className="font-medium mb-3 text-sm text-primary">
                         {selectedCategory === "rights" 
                           ? "Legal Rights & Protections" 
                           : schemeCategories.find(cat => cat.id === selectedCategory)?.name || ""}
                       </h3>
-                      <ScrollArea className="h-48">
+                      <ScrollArea className="h-36">
                         {selectedCategory === "rights" ? (
                           <div className="space-y-2">
                             {rights.map((right, index) => (
-                              <div key={index} className="p-2 border rounded hover:bg-muted cursor-pointer" onClick={() => {
-                                setMessages(prev => [...prev, {
-                                  id: Date.now().toString(),
-                                  content: right,
-                                  sender: "bot",
-                                  timestamp: new Date()
-                                }]);
-                              }}>
+                              <div 
+                                key={index} 
+                                className="p-2 border rounded-lg hover:bg-muted transition-colors cursor-pointer hover:shadow-sm" 
+                                onClick={() => {
+                                  setMessages(prev => [...prev, {
+                                    id: Date.now().toString(),
+                                    content: right,
+                                    sender: "bot",
+                                    timestamp: new Date()
+                                  }]);
+                                }}
+                              >
                                 {right.split(':')[0]}
                               </div>
                             ))}
@@ -545,7 +553,7 @@ const Chatbot = () => {
                               ?.schemes.map((scheme, index) => (
                                 <div 
                                   key={index}
-                                  className="p-2 border rounded hover:bg-muted cursor-pointer"
+                                  className="p-2 border rounded-lg hover:bg-muted transition-colors cursor-pointer hover:shadow-sm"
                                   onClick={() => handleSchemeSelect(scheme)}
                                 >
                                   <div className="font-medium">{scheme.name}</div>
@@ -561,16 +569,21 @@ const Chatbot = () => {
               </div>
             </CardContent>
             
-            <CardFooter className="p-4 pt-0">
-              <form onSubmit={handleSendMessage} className="flex w-full gap-2">
+            <CardFooter className="p-4 border-t bg-muted/30">
+              <form onSubmit={handleSendMessage} className="flex w-full gap-2 relative">
                 <Input
                   placeholder={t("chatbot.messagePlaceholder")}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading}
-                  className="flex-1"
+                  className="flex-1 pr-10 h-12 rounded-full pl-5 shadow-sm border-muted"
                 />
-                <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full"
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
