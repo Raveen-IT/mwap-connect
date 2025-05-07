@@ -19,7 +19,7 @@ export const getGeminiResponse = async (prompt: string): Promise<GeminiResponse>
     const API_KEY = "AIzaSyAPIKhdvLJPYpmRd3rcXk9SZMMpE39wjc0";
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
     
-    console.log("Sending request to Gemini API");
+    console.log("Sending request to Gemini API with prompt:", prompt);
     
     const response = await fetch(`${API_URL}?key=${API_KEY}`, {
       method: "POST",
@@ -68,20 +68,30 @@ export const getGeminiResponse = async (prompt: string): Promise<GeminiResponse>
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API Error:", errorData);
+      const errorText = await response.text();
+      console.error("Gemini API Error Response:", errorText);
+      
+      let errorMessage = "API request failed";
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch (e) {
+        console.error("Error parsing error response:", e);
+      }
+      
       return { 
         text: "Sorry, I'm having trouble connecting to my knowledge base. Please try again later.", 
-        error: errorData.error?.message || "API request failed" 
+        error: errorMessage
       };
     }
 
     const data = await response.json();
-    console.log("Gemini API response:", data);
+    console.log("Gemini API response received:", data);
     
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content?.parts?.[0]?.text) {
       return { text: data.candidates[0].content.parts[0].text };
     } else {
+      console.error("Unexpected API response structure:", data);
       return { 
         text: "I apologize, but I couldn't generate a proper response. Please try rephrasing your question.", 
         error: "Invalid response format" 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Info, MessageSquare, HelpCircle } from "lucide-react";
+import { Send, Info, MessageSquare, HelpCircle, AlertCircle } from "lucide-react";
 import { getCurrentUser } from "@/utils/storage";
 import { User } from "@/types/user";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -14,6 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getGeminiResponse } from "@/utils/geminiApi";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Message {
   id: string;
@@ -57,6 +58,7 @@ const Chatbot = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -295,6 +297,7 @@ const Chatbot = () => {
     };
     
     setMessages(prev => [...prev, botResponse]);
+    setApiError(null);
   };
   
   useEffect(() => {
@@ -323,6 +326,8 @@ const Chatbot = () => {
     
     if (!input.trim()) return;
     
+    setApiError(null);
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input,
@@ -335,64 +340,38 @@ const Chatbot = () => {
     setIsLoading(true);
     
     try {
-      // For category-specific queries, we can still use predefined responses
-      if (selectedCategory) {
-        const categoryContent = 
-          selectedCategory === "rights" 
-            ? `Legal Rights & Protections for Migrant Workers:\n\n${rights.join("\n\n")}`
-            : schemeCategories.find(cat => cat.id === selectedCategory)?.schemes.map(
-                scheme => `${scheme.name}: ${scheme.description}\nEligibility: ${scheme.eligibility}\nBenefits: ${scheme.benefits}`
-              ).join("\n\n");
-              
-        const userQuery = `${input} (Regarding ${selectedCategory === "rights" ? "Legal Rights & Protections" : 
-          schemeCategories.find(cat => cat.id === selectedCategory)?.name})
-          
-          Here's relevant information that might help:
-          ${categoryContent}
-          
-          Please provide a helpful response based on this information.`;
-          
-        const response = await getGeminiResponse(userQuery);
-        
-        const botResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: response.text,
-          sender: "bot",
-          timestamp: new Date(),
-        };
-        
-        setMessages(prev => [...prev, botResponse]);
-        
-        if (response.error) {
-          console.error("Gemini API error:", response.error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "There was an issue connecting to the AI assistant.",
-          });
-        }
-      } else {
-        // For general queries, use Gemini API
-        const response = await getGeminiResponse(input);
-        
-        const botResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          content: response.text,
-          sender: "bot",
-          timestamp: new Date(),
-        };
-        
-        setMessages(prev => [...prev, botResponse]);
-        
-        if (response.error) {
-          console.error("Gemini API error:", response.error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "There was an issue connecting to the AI assistant.",
-          });
-        }
+      const categoryContent = selectedCategory === "rights" 
+        ? `Legal Rights & Protections for Migrant Workers:\n\n${rights.join("\n\n")}`
+        : schemeCategories.find(cat => cat.id === selectedCategory)?.schemes.map(
+            scheme => `${scheme.name}: ${scheme.description}\nEligibility: ${scheme.eligibility}\nBenefits: ${scheme.benefits}`
+          )?.join("\n\n") || "";
+      
+      const prompt = selectedCategory 
+        ? `${input}\n\nContext: ${categoryContent}`
+        : input;
+      
+      console.log("Calling Gemini API...");
+      const response = await getGeminiResponse(prompt);
+      console.log("Gemini API response:", response);
+      
+      if (response.error) {
+        console.error("Gemini API error:", response.error);
+        setApiError(response.error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "There was an issue connecting to the AI assistant.",
+        });
       }
+      
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: response.text,
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, botResponse]);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       
@@ -415,16 +394,70 @@ const Chatbot = () => {
     }
   };
   
+  const handleTestConnection = async () => {
+    setIsLoading(true);
+    setApiError(null);
+    
+    try {
+      const testResponse = await getGeminiResponse("Hello, just testing the connection.");
+      if (!testResponse.error) {
+        toast({
+          title: "Success",
+          description: "Connection to AI assistant is working!",
+        });
+      } else {
+        setApiError(testResponse.error);
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: testResponse.error,
+        });
+      }
+    } catch (error) {
+      console.error("Test connection error:", error);
+      setApiError(error instanceof Error ? error.message : "Unknown error");
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Failed to connect to the AI assistant",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   return (
     <Layout>
       <section className="section-container py-8">
         <div className="max-w-4xl mx-auto">
           <Card className="h-[calc(100vh-10rem)]">
             <CardHeader>
-              <CardTitle className="text-primary">{t("chatbot.title")}</CardTitle>
-              <CardDescription>
-                {t("chatbot.subtitle")}
-              </CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-primary">{t("chatbot.title")}</CardTitle>
+                  <CardDescription>
+                    {t("chatbot.subtitle")}
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTestConnection}
+                  disabled={isLoading}
+                >
+                  Test Connection
+                </Button>
+              </div>
+              
+              {apiError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Connection Error</AlertTitle>
+                  <AlertDescription>
+                    {apiError}
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardHeader>
             
             <CardContent className="p-0">
