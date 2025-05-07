@@ -12,7 +12,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/context/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getGeminiResponse } from "@/utils/geminiApi";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -51,14 +50,13 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      content: "Hello! I'm your MWAP assistant powered by Gemini AI. Please select a category below to explore benefits and schemes for migrant workers, or ask me any specific questions.",
+      content: "Hello! I'm your MWAP assistant. Please select a category below to explore benefits and schemes for migrant workers, or ask me any specific questions.",
       sender: "bot",
       timestamp: new Date(),
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -297,7 +295,6 @@ const Chatbot = () => {
     };
     
     setMessages(prev => [...prev, botResponse]);
-    setApiError(null);
   };
   
   useEffect(() => {
@@ -313,7 +310,7 @@ const Chatbot = () => {
         ...prev,
         {
           id: "personal-welcome",
-          content: `Welcome back, ${currentUser.name}! I'm your MWAP assistant powered by Gemini AI. Please select a benefit category below to explore schemes for migrant workers, or ask me any specific questions.`,
+          content: `Welcome back, ${currentUser.name}! I'm your MWAP assistant. Please select a benefit category below to explore schemes for migrant workers, or ask me any specific questions.`,
           sender: "bot",
           timestamp: new Date(),
         }
@@ -325,8 +322,6 @@ const Chatbot = () => {
     e.preventDefault();
     
     if (!input.trim()) return;
-    
-    setApiError(null);
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -340,38 +335,21 @@ const Chatbot = () => {
     setIsLoading(true);
     
     try {
-      const categoryContent = selectedCategory === "rights" 
-        ? `Legal Rights & Protections for Migrant Workers:\n\n${rights.join("\n\n")}`
-        : schemeCategories.find(cat => cat.id === selectedCategory)?.schemes.map(
-            scheme => `${scheme.name}: ${scheme.description}\nEligibility: ${scheme.eligibility}\nBenefits: ${scheme.benefits}`
-          )?.join("\n\n") || "";
-      
-      const prompt = selectedCategory 
-        ? `${input}\n\nContext: ${categoryContent}`
-        : input;
-      
-      console.log("Calling Gemini API...");
-      const response = await getGeminiResponse(prompt);
-      console.log("Gemini API response:", response);
-      
-      if (response.error) {
-        console.error("Gemini API error:", response.error);
-        setApiError(response.error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "There was an issue connecting to the AI assistant.",
-        });
-      }
+      // Instead of calling the Gemini API, we'll use our local getBotResponse function
+      const response = getBotResponse(input);
       
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: response.text,
+        content: response,
         sender: "bot",
         timestamp: new Date(),
       };
       
-      setMessages(prev => [...prev, botResponse]);
+      setTimeout(() => {
+        setMessages(prev => [...prev, botResponse]);
+        setIsLoading(false);
+      }, 500); // Add a small delay to simulate processing
+      
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       
@@ -383,46 +361,13 @@ const Chatbot = () => {
       };
       
       setMessages(prev => [...prev, errorMessage]);
+      setIsLoading(false);
       
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to get response from the AI assistant.",
+        description: "Failed to process your message.",
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const handleTestConnection = async () => {
-    setIsLoading(true);
-    setApiError(null);
-    
-    try {
-      const testResponse = await getGeminiResponse("Hello, just testing the connection.");
-      if (!testResponse.error) {
-        toast({
-          title: "Success",
-          description: "Connection to AI assistant is working!",
-        });
-      } else {
-        setApiError(testResponse.error);
-        toast({
-          variant: "destructive",
-          title: "Connection Error",
-          description: testResponse.error,
-        });
-      }
-    } catch (error) {
-      console.error("Test connection error:", error);
-      setApiError(error instanceof Error ? error.message : "Unknown error");
-      toast({
-        variant: "destructive",
-        title: "Connection Error",
-        description: "Failed to connect to the AI assistant",
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
   
@@ -439,25 +384,7 @@ const Chatbot = () => {
                     {t("chatbot.subtitle")}
                   </CardDescription>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleTestConnection}
-                  disabled={isLoading}
-                >
-                  Test Connection
-                </Button>
               </div>
-              
-              {apiError && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Connection Error</AlertTitle>
-                  <AlertDescription>
-                    {apiError}
-                  </AlertDescription>
-                </Alert>
-              )}
             </CardHeader>
             
             <CardContent className="p-0">
