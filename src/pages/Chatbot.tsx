@@ -14,6 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { supabase } from "@/lib/supabase";
 
 interface Message {
   id: string;
@@ -335,39 +336,47 @@ const Chatbot = () => {
     setIsLoading(true);
     
     try {
-      // Instead of calling the Gemini API, we'll use our local getBotResponse function
-      const response = getBotResponse(input);
+      // Call the OpenRouter proxy edge function
+      const { data, error } = await supabase.functions.invoke('openrouter-proxy', {
+        body: { prompt: input }
+      });
       
+      if (error) {
+        throw new Error(`Edge function error: ${error.message}`);
+      }
+      
+      if (!data || !data.response) {
+        throw new Error('Received invalid response from OpenRouter');
+      }
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: response,
+        content: data.response,
         sender: "bot",
         timestamp: new Date(),
       };
       
-      setTimeout(() => {
-        setMessages(prev => [...prev, botResponse]);
-        setIsLoading(false);
-      }, 500); // Add a small delay to simulate processing
+      setMessages(prev => [...prev, botResponse]);
       
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'm sorry, I encountered an error while processing your request. Please try again later.",
+        content: "Sorry, something went wrong. Please try again later.",
         sender: "bot",
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, errorMessage]);
-      setIsLoading(false);
       
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to process your message.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
   
