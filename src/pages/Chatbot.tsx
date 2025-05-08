@@ -62,6 +62,7 @@ const Chatbot = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const schemeCategories: SchemeCategory[] = [
     {
@@ -301,7 +302,12 @@ const Chatbot = () => {
   };
   
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      // Use setTimeout to ensure the DOM has updated
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
   }, [messages]);
   
   useEffect(() => {
@@ -386,8 +392,8 @@ const Chatbot = () => {
     <Layout>
       <section className="section-container py-8 flex justify-center items-center min-h-[calc(100vh-10rem)]">
         <div className="w-full max-w-4xl mx-auto">
-          <Card className="border shadow-lg">
-            <CardHeader className="border-b bg-muted/30">
+          <Card className="border shadow-lg overflow-hidden">
+            <CardHeader className="border-b bg-muted/30 py-4">
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle className="text-primary text-2xl">{t("chatbot.title")}</CardTitle>
@@ -398,35 +404,38 @@ const Chatbot = () => {
               </div>
             </CardHeader>
             
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 h-[calc(100vh-16rem)]">
-                <div className="border-r hidden md:block bg-background/50">
-                  <div className="p-4 h-full">
-                    <h3 className="font-semibold mb-4 text-sm text-primary">Select a Category</h3>
-                    <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
-                      {schemeCategories.map((category) => (
-                        <div key={category.id} className="flex items-center space-x-2">
-                          <RadioGroupItem value={category.id} id={category.id} />
-                          <label htmlFor={category.id} className="flex items-center cursor-pointer">
-                            {category.icon}
-                            <span className="ml-2 text-sm">{category.name}</span>
-                          </label>
-                        </div>
-                      ))}
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="rights" id="rights" />
-                        <label htmlFor="rights" className="flex items-center cursor-pointer">
-                          <Info className="h-5 w-5 text-red-500" />
-                          <span className="ml-2 text-sm">Legal Rights</span>
+            <div className="grid grid-cols-1 md:grid-cols-4 h-[calc(100vh-16rem)] max-h-[600px]">
+              <div className="border-r hidden md:block bg-background/50">
+                <div className="p-4 h-full">
+                  <h3 className="font-semibold mb-4 text-sm text-primary">Select a Category</h3>
+                  <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
+                    {schemeCategories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={category.id} id={category.id} />
+                        <label htmlFor={category.id} className="flex items-center cursor-pointer">
+                          {category.icon}
+                          <span className="ml-2 text-sm">{category.name}</span>
                         </label>
                       </div>
-                    </RadioGroup>
-                  </div>
+                    ))}
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="rights" id="rights" />
+                      <label htmlFor="rights" className="flex items-center cursor-pointer">
+                        <Info className="h-5 w-5 text-red-500" />
+                        <span className="ml-2 text-sm">Legal Rights</span>
+                      </label>
+                    </div>
+                  </RadioGroup>
                 </div>
-                
-                <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-full bg-background`}>
-                  <ScrollArea className="flex-1 p-4">
-                    <div className="space-y-4 py-2">
+              </div>
+              
+              <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-full bg-background`}>
+                <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+                  <ScrollArea 
+                    className="flex-1 p-4 overflow-y-auto" 
+                    ref={scrollAreaRef}
+                  >
+                    <div className="space-y-4 py-2 pb-6">
                       {messages.map((message) => (
                         <div
                           key={message.id}
@@ -434,7 +443,7 @@ const Chatbot = () => {
                         >
                           <div className={`flex gap-3 max-w-[85%] ${message.sender === "user" ? "flex-row-reverse" : ""}`}>
                             {message.sender === "bot" && (
-                              <Avatar className="h-8 w-8">
+                              <Avatar className="h-8 w-8 flex-shrink-0">
                                 <AvatarFallback className="bg-primary text-primary-foreground">
                                   M
                                 </AvatarFallback>
@@ -459,7 +468,7 @@ const Chatbot = () => {
                             </div>
                             
                             {message.sender === "user" && user && (
-                              <Avatar className="h-8 w-8">
+                              <Avatar className="h-8 w-8 flex-shrink-0">
                                 <AvatarFallback className="bg-accent text-accent-foreground">
                                   {user.name.charAt(0).toUpperCase()}
                                 </AvatarFallback>
@@ -472,7 +481,7 @@ const Chatbot = () => {
                       {isLoading && (
                         <div className="flex justify-start animate-fade-in">
                           <div className="flex gap-3 max-w-[85%]">
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 flex-shrink-0">
                               <AvatarFallback className="bg-primary text-primary-foreground">
                                 M
                               </AvatarFallback>
@@ -515,12 +524,12 @@ const Chatbot = () => {
                         </div>
                       )}
                       
-                      <div ref={messagesEndRef} />
+                      <div ref={messagesEndRef} className="h-0" />
                     </div>
                   </ScrollArea>
                   
                   {selectedCategory && !isMobile && (
-                    <div className="border-t p-4 mt-auto max-h-[30%]">
+                    <div className="border-t p-4 mt-auto max-h-[30%] overflow-hidden">
                       <h3 className="font-medium mb-3 text-sm text-primary">
                         {selectedCategory === "rights" 
                           ? "Legal Rights & Protections" 
@@ -565,11 +574,11 @@ const Chatbot = () => {
                       </ScrollArea>
                     </div>
                   )}
-                </div>
+                </CardContent>
               </div>
-            </CardContent>
+            </div>
             
-            <CardFooter className="p-4 border-t bg-muted/30">
+            <CardFooter className="p-4 border-t bg-muted/30 flex-shrink-0">
               <form onSubmit={handleSendMessage} className="flex w-full gap-2 relative">
                 <Input
                   placeholder={t("chatbot.messagePlaceholder")}
@@ -577,6 +586,7 @@ const Chatbot = () => {
                   onChange={(e) => setInput(e.target.value)}
                   disabled={isLoading}
                   className="flex-1 pr-10 h-12 rounded-full pl-5 shadow-sm border-muted"
+                  autoComplete="off"
                 />
                 <Button 
                   type="submit" 
