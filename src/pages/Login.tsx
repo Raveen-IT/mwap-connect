@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -72,10 +73,10 @@ const Login = () => {
       const newOtp = generateOTP();
       setGeneratedOtp(newOtp);
 
-      // Simulate OTP sending
+      // Send OTP using Fast2SMS integration
       const result = await sendOtpSms(mobile, newOtp);
       if (result.success) {
-        toast.success("OTP sent to your mobile (simulated)");
+        toast.success("OTP sent to your mobile");
         toast.info(`For testing, your OTP is: ${newOtp}`);
         setStep('verification');
       } else {
@@ -95,10 +96,10 @@ const Login = () => {
     setGeneratedOtp(newOtp);
     
     try {
-      // Simulate OTP sending
+      // Send OTP using Fast2SMS integration
       const result = await sendOtpSms(mobile, newOtp);
       if (result.success) {
-        toast.success("A new OTP has been sent to your mobile (simulated)");
+        toast.success("A new OTP has been sent to your mobile");
         toast.info(`For testing, your new OTP is: ${newOtp}`);
       } else {
         toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));

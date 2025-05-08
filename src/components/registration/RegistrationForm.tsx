@@ -138,10 +138,10 @@ export const RegistrationForm = () => {
     const newOtp = generateOTP();
     setGeneratedOtp(newOtp);
 
-    // Simulate OTP sending
+    // Send OTP using Fast2SMS
     const result = await sendOtpSms(formData.mobile as string, newOtp);
     if (result.success) {
-      toast.success("OTP sent to your mobile (simulated)");
+      toast.success("OTP sent to your mobile");
       toast.info(`For testing, your OTP is: ${newOtp}`);
       setStep('verification');
     } else {

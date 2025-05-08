@@ -34,3 +34,6 @@ enabled = true
 [functions]
 [functions.openrouter-proxy]
 verify_jwt = true
+
+[functions.send-otp-sms]
+verify_jwt = false

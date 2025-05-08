@@ -1,5 +1,5 @@
 
-// Send OTP SMS Edge Function using Vonage
+// Send OTP SMS Edge Function using Fast2SMS
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -10,14 +10,10 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Get Vonage API credentials from environment variables
-// or use the hardcoded values if environment variables are not set
-const VONAGE_API_KEY = Deno.env.get("VONAGE_API_KEY") || "da487b75";
-const VONAGE_API_SECRET = Deno.env.get("VONAGE_API_SECRET") || "q71GwNEjXBXs0dIa";
-const VONAGE_BRAND_NAME = Deno.env.get("VONAGE_BRAND_NAME") || "MWAP";
+// Get Fast2SMS API credentials from environment variables
+const FAST2SMS_API_KEY = Deno.env.get("FAST2SMS_API_KEY");
 
-console.log("Vonage API Key: ", VONAGE_API_KEY ? "Set" : "Not set");
-console.log("Vonage API Secret: ", VONAGE_API_SECRET ? "Set" : "Not set");
+console.log("Fast2SMS API Key: ", FAST2SMS_API_KEY ? "Set" : "Not set");
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -27,11 +23,11 @@ serve(async (req) => {
 
   try {
     // Make sure the required credentials are available
-    if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
-      console.error("Missing Vonage credentials");
+    if (!FAST2SMS_API_KEY) {
+      console.error("Missing Fast2SMS credentials");
       return new Response(
         JSON.stringify({ 
-          error: "Vonage configuration missing. Please set VONAGE_API_KEY and VONAGE_API_SECRET" 
+          error: "Fast2SMS configuration missing. Please set FAST2SMS_API_KEY" 
         }),
         {
           status: 500,
@@ -51,41 +47,48 @@ serve(async (req) => {
 
     console.log(`Sending OTP ${otp} to ${to}`);
 
-    // Format phone number if needed
+    // Format phone number if needed (remove + sign if present as Fast2SMS doesn't require it)
     let formattedNumber = to;
-    if (!to.startsWith("+")) {
-      formattedNumber = `+${to}`;
+    if (to.startsWith("+")) {
+      formattedNumber = to.substring(1); // Remove the + sign
+    }
+    
+    // For Indian numbers, ensure we remove the country code if present
+    if (formattedNumber.startsWith("91") && formattedNumber.length > 10) {
+      formattedNumber = formattedNumber.substring(2);
     }
 
-    // Construct the request to Vonage API
-    const url = "https://rest.nexmo.com/sms/json";
+    // Construct the request to Fast2SMS API
+    const url = "https://www.fast2sms.com/dev/bulkV2";
 
-    // Build request body according to Vonage API
-    const data = {
-      api_key: VONAGE_API_KEY,
-      api_secret: VONAGE_API_SECRET,
-      from: VONAGE_BRAND_NAME,
-      to: formattedNumber,
-      text: `Your OTP verification code is: ${otp}`,
-      channel: "sms"
+    // Build request headers and body according to Fast2SMS API
+    const headers = {
+      "Authorization": FAST2SMS_API_KEY,
+      "Content-Type": "application/json"
     };
 
-    console.log("Sending request to Vonage:", { ...data, api_secret: "[REDACTED]" });
+    // Build request body according to Fast2SMS API
+    const data = {
+      route: "otp",
+      variables_values: otp,
+      numbers: formattedNumber,
+      flash: 0
+    };
 
-    const vonageResponse = await fetch(url, {
+    console.log("Sending request to Fast2SMS:", { ...data, authorization: "[REDACTED]" });
+
+    const smsResponse = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: headers,
       body: JSON.stringify(data),
     });
 
-    const responseBody = await vonageResponse.json();
-    console.log("Vonage API response:", responseBody);
+    const responseBody = await smsResponse.json();
+    console.log("Fast2SMS API response:", responseBody);
 
-    if (!vonageResponse.ok) {
-      console.error("Vonage API error:", responseBody);
-      return new Response(JSON.stringify({ error: responseBody.message || "Vonage API error" }), {
+    if (!smsResponse.ok || !responseBody.return) {
+      console.error("Fast2SMS API error:", responseBody);
+      return new Response(JSON.stringify({ error: responseBody.message || "Fast2SMS API error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
