@@ -14,7 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useSupabase } from "@/context/SupabaseContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingPage } from "@/components/ui/loading-page";
-import { sendOtpSms } from "@/utils/sendOtpSms";
+import { sendOTP, verifyOTP } from "@/utils/otpService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
