@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -13,7 +14,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useSupabase } from "@/context/SupabaseContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingPage } from "@/components/ui/loading-page";
-import { sendOTP, verifyOTP } from "@/utils/otpService";
+import { sendOTP, verifyOTP, formatPhoneNumberE164 } from "@/utils/otpService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
