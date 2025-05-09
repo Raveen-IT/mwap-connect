@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
@@ -37,6 +36,14 @@ const Login = () => {
     return <LoadingPage message="Authenticating..." />;
   }
 
+  // Handle mobile input separately to only accept 10 digits
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    // Only allow up to 10 digits
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    setMobile(digitsOnly);
+  };
+
   const handleMobileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -48,11 +55,14 @@ const Login = () => {
     setLoading(true);
     
     try {
+      // Format phone number to E.164 format before checking or sending
+      const formattedPhone = formatPhoneNumberE164(mobile);
+      
       // First, check if the user exists in Supabase
       const { data: users, error } = await supabase
         .from('user_data')
         .select('*')
-        .eq('mobile_number', mobile)
+        .eq('mobile_number', formattedPhone)
         .limit(1);
       
       if (error) {
@@ -70,7 +80,7 @@ const Login = () => {
       }
       
       // Send OTP using Twilio via Edge Function
-      const result = await sendOTP(mobile);
+      const result = await sendOTP(formattedPhone);
       
       if (result.success) {
         toast.success("OTP sent to your mobile");
@@ -97,8 +107,11 @@ const Login = () => {
     setLoading(true);
     
     try {
+      // Format phone number to E.164 format
+      const formattedPhone = formatPhoneNumberE164(mobile);
+      
       // Send OTP using Twilio via Edge Function
-      const result = await sendOTP(mobile);
+      const result = await sendOTP(formattedPhone);
       
       if (result.success) {
         toast.success("A new OTP has been sent to your mobile");
@@ -130,8 +143,11 @@ const Login = () => {
     setLoading(true);
     
     try {
+      // Format phone number to E.164 format
+      const formattedPhone = formatPhoneNumberE164(mobile);
+      
       // Verify the OTP with our backend
-      const result = await verifyOTP(mobile, otp);
+      const result = await verifyOTP(formattedPhone, otp);
       
       if (!result.valid) {
         toast.error(result.error || "Invalid OTP. Please try again");
@@ -143,7 +159,7 @@ const Login = () => {
       const { data: users, error } = await supabase
         .from('user_data')
         .select('*')
-        .eq('mobile_number', mobile)
+        .eq('mobile_number', formattedPhone)
         .limit(1);
       
       if (error) {
@@ -302,14 +318,24 @@ const Login = () => {
                           <Label htmlFor="mobile" className="flex items-center gap-1">
                             <Phone className="h-4 w-4" /> {t("login.mobile")}
                           </Label>
-                          <Input
-                            id="mobile"
-                            value={mobile}
-                            onChange={(e) => setMobile(e.target.value)}
-                            placeholder="Enter your 10-digit mobile number"
-                            required
-                            autoFocus
-                          />
+                          <div className="flex">
+                            <div className="flex-shrink-0 flex items-center justify-center border border-r-0 rounded-l-md bg-muted px-3 text-muted-foreground">
+                              +91
+                            </div>
+                            <Input
+                              id="mobile"
+                              value={mobile}
+                              onChange={handleMobileChange}
+                              placeholder="Enter your 10-digit mobile number"
+                              required
+                              autoFocus
+                              className="rounded-l-none"
+                              maxLength={10}
+                              inputMode="numeric"
+                              pattern="[0-9]{10}"
+                              title="Please enter exactly 10 digits"
+                            />
+                          </div>
                         </div>
                         
                         <Button 
@@ -341,7 +367,7 @@ const Login = () => {
                         <Key className="h-6 w-6" /> {t("login.otpVerification")}
                       </h2>
                       <p className="mb-6 text-muted-foreground">
-                        {t("login.enterOTP")} {mobile}
+                        {t("login.enterOTP")} {mobile.startsWith('+91') ? mobile : `+91-${mobile}`}
                       </p>
                       
                       <div className="mb-6 p-4 bg-primary/10 rounded-lg text-center">
@@ -490,14 +516,24 @@ const Login = () => {
                         <Label htmlFor="mobile" className="flex items-center gap-1">
                           <Phone className="h-4 w-4" /> {t("login.mobile")}
                         </Label>
-                        <Input
-                          id="mobile"
-                          value={mobile}
-                          onChange={(e) => setMobile(e.target.value)}
-                          placeholder="Enter your 10-digit mobile number"
-                          required
-                          autoFocus
-                        />
+                        <div className="flex">
+                          <div className="flex-shrink-0 flex items-center justify-center border border-r-0 rounded-l-md bg-muted px-3 text-muted-foreground">
+                            +91
+                          </div>
+                          <Input
+                            id="mobile"
+                            value={mobile}
+                            onChange={handleMobileChange}
+                            placeholder="Enter your 10-digit mobile number"
+                            required
+                            autoFocus
+                            className="rounded-l-none"
+                            maxLength={10}
+                            inputMode="numeric"
+                            pattern="[0-9]{10}"
+                            title="Please enter exactly 10 digits"
+                          />
+                        </div>
                       </div>
                       
                       <Button 
@@ -529,7 +565,7 @@ const Login = () => {
                       <Key className="h-6 w-6" /> {t("login.otpVerification")}
                     </h2>
                     <p className="mb-6 text-muted-foreground">
-                      {t("login.enterOTP")} {mobile}
+                      {t("login.enterOTP")} {mobile.startsWith('+91') ? mobile : `+91-${mobile}`}
                     </p>
                     
                     <div className="mb-6 p-4 bg-primary/10 rounded-lg text-center">

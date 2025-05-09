@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { User } from "@/types/user";
 import { RegistrationDetails } from "./RegistrationDetails";
 import { OTPVerification } from "./OTPVerification";
 import { RegistrationSuccess } from "./RegistrationSuccess";
-import { sendOTP, verifyOTP } from "@/utils/otpService";
+import { sendOTP, formatPhoneNumberE164 } from "@/utils/otpService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,8 +34,11 @@ export const RegistrationForm = () => {
     setLoading(true);
     
     try {
+      // Format the phone number to include +91 before sending OTP
+      const formattedPhone = formatPhoneNumberE164(validatedFormData.mobile as string);
+      
       // Send OTP using Twilio via Edge Function
-      const result = await sendOTP(validatedFormData.mobile as string);
+      const result = await sendOTP(formattedPhone);
       
       if (result.success) {
         toast.success("OTP sent to your mobile");
@@ -65,6 +67,9 @@ export const RegistrationForm = () => {
       const newUserId = generateWorkerId();
       setUserId(newUserId);
       
+      // Format the phone number to E.164 format
+      const formattedPhone = formatPhoneNumberE164(formData.mobile as string);
+      
       // Insert into the user_data table (existing)
       const { error: userDataError } = await supabase
         .from('user_data')
@@ -75,7 +80,7 @@ export const RegistrationForm = () => {
           gender: formData.gender,
           working_type: formData.workingType,
           migration_place: formData.migrationPlace,
-          mobile_number: formData.mobile,
+          mobile_number: formattedPhone,
           aadhaar_number: formData.aadhaarNumber,
           email: formData.email,
           is_verified: true
@@ -94,7 +99,7 @@ export const RegistrationForm = () => {
           gender: formData.gender,
           working_type: formData.workingType,
           migration_place: formData.migrationPlace,
-          mobile: formData.mobile,
+          mobile: formattedPhone,
           aadhaar_number: formData.aadhaarNumber,
           email: formData.email,
           registration_date: new Date().toISOString()
@@ -118,8 +123,11 @@ export const RegistrationForm = () => {
     setLoading(true);
     
     try {
+      // Format the phone number to include +91
+      const formattedPhone = formatPhoneNumberE164(formData.mobile as string);
+      
       // Send OTP using Twilio via Edge Function
-      const result = await sendOTP(formData.mobile as string);
+      const result = await sendOTP(formattedPhone);
       
       if (result.success) {
         toast.success("OTP resent to your mobile");

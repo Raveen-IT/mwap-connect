@@ -16,6 +16,7 @@ import { User, Gender, WorkingType } from "@/types/user";
 import { validateMobileNumber, validateAadhaar } from "@/utils/form-validators";
 import { getUserByMobile, getUserByAadhaar } from "@/utils/storage";
 import { supabase } from "@/integrations/supabase/client";
+import { formatPhoneNumberE164 } from "@/utils/otpService";
 
 interface RegistrationDetailsProps {
   formData: Partial<User>;
@@ -39,6 +40,14 @@ export const RegistrationDetails = ({ formData: initialFormData, loading, onSubm
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
+  };
+
+  // Handle mobile input separately to only accept 10 digits
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    // Only allow up to 10 digits
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
+    setFormData({ ...formData, mobile: digitsOnly });
   };
 
   const validateDetailsForm = () => {
@@ -91,10 +100,13 @@ export const RegistrationDetails = ({ formData: initialFormData, loading, onSubm
     
     // Check if the mobile or aadhaar exists in Supabase
     try {
+      // Format the phone number to include +91 before checking
+      const formattedPhone = formatPhoneNumberE164(formData.mobile as string);
+      
       const { data: existingMobile } = await supabase
         .from('registration_details')
         .select('id')
-        .eq('mobile', formData.mobile)
+        .eq('mobile', formattedPhone)
         .single();
         
       if (existingMobile) {
@@ -209,14 +221,24 @@ export const RegistrationDetails = ({ formData: initialFormData, loading, onSubm
         
         <div className="space-y-2">
           <Label htmlFor="mobile">Mobile Number</Label>
-          <Input
-            id="mobile"
-            name="mobile"
-            value={formData.mobile}
-            onChange={handleTextChange}
-            placeholder="10-digit mobile number"
-            required
-          />
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center justify-center border border-r-0 rounded-l-md bg-muted px-3 text-muted-foreground">
+              +91
+            </div>
+            <Input
+              id="mobile"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleMobileChange}
+              placeholder="10-digit mobile number"
+              required
+              className="rounded-l-none"
+              maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]{10}"
+              title="Please enter exactly 10 digits"
+            />
+          </div>
           <p className="text-xs text-muted-foreground">
             We'll send a verification OTP to this number
           </p>

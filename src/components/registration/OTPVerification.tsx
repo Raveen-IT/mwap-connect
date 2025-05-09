@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CustomButton } from "@/components/ui/custom-button";
-import { verifyOTP } from "@/utils/otpService";
+import { verifyOTP, formatPhoneNumberE164 } from "@/utils/otpService";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -39,8 +39,11 @@ export const OTPVerification = ({
     setVerifying(true);
     
     try {
+      // Format the mobile number to E.164 format for verification
+      const formattedPhone = formatPhoneNumberE164(mobile);
+      
       // First verify the OTP with our backend
-      const result = await verifyOTP(mobile, otp);
+      const result = await verifyOTP(formattedPhone, otp);
       
       if (result.valid) {
         // If valid, call the onSubmit handler from parent
@@ -55,11 +58,14 @@ export const OTPVerification = ({
     }
   };
 
+  // Format the displayed phone number for user-friendly display
+  const displayPhone = mobile.startsWith('+91') ? mobile : `+91-${mobile}`;
+
   return (
     <div className="glass-effect rounded-xl p-8 animate-fade-up">
       <h2 className="text-2xl font-bold mb-6">OTP Verification</h2>
       <p className="mb-6 text-muted-foreground">
-        Please enter the OTP sent to your mobile number {mobile}
+        Please enter the OTP sent to your mobile number {displayPhone}
       </p>
       
       {generatedOtp && (

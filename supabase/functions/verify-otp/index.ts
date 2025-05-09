@@ -20,6 +20,30 @@ const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   : null;
 
+// Helper function to format phone numbers to E.164 format
+const formatPhoneNumberE164 = (phoneNumber: string): string => {
+  // Remove any non-digit characters
+  const digitsOnly = phoneNumber.replace(/\D/g, '');
+  
+  // If the number already starts with +91, return as is
+  if (phoneNumber.startsWith('+91')) {
+    return phoneNumber;
+  }
+  
+  // If the number starts with 91, add a plus sign
+  if (phoneNumber.startsWith('91')) {
+    return `+${phoneNumber}`;
+  }
+  
+  // If it's a 10 digit Indian number, add +91 prefix
+  if (digitsOnly.length === 10) {
+    return `+91${digitsOnly}`;
+  }
+  
+  // If it's already in some other format, add + if needed
+  return phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber}`;
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -50,8 +74,8 @@ serve(async (req) => {
       });
     }
 
-    // Format phone number to E.164 format if not already (adding + if needed)
-    const formattedPhone = phone_number.startsWith("+") ? phone_number : `+${phone_number}`;
+    // Format phone number to E.164 format if not already
+    const formattedPhone = formatPhoneNumberE164(phone_number);
 
     console.log(`Verifying OTP ${otp_code} for ${formattedPhone}`);
 
