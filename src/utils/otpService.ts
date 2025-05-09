@@ -10,8 +10,11 @@ export const generateOTP = () => {
 // Function to send OTP via Supabase Edge Function
 export const sendOTP = async (phoneNumber: string): Promise<{success: boolean, otp?: string, error?: string}> => {
   try {
+    // Format phone number if needed (adding + if needed)
+    const formattedPhone = phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber}`;
+    
     const { data, error } = await supabase.functions.invoke("send-otp-sms", {
-      body: { to: phoneNumber }
+      body: { to: formattedPhone }
     });
 
     if (error) {
@@ -37,9 +40,12 @@ export const sendOTP = async (phoneNumber: string): Promise<{success: boolean, o
 // Function to verify OTP
 export const verifyOTP = async (phoneNumber: string, otpCode: string): Promise<{valid: boolean, error?: string}> => {
   try {
+    // Format phone number if needed (adding + if needed)
+    const formattedPhone = phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber}`;
+    
     const { data, error } = await supabase.functions.invoke("verify-otp", {
       body: { 
-        phone_number: phoneNumber, 
+        phone_number: formattedPhone, 
         otp_code: otpCode 
       }
     });

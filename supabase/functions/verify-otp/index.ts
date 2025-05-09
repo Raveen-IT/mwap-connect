@@ -50,13 +50,16 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Verifying OTP ${otp_code} for ${phone_number}`);
+    // Format phone number to E.164 format if not already (adding + if needed)
+    const formattedPhone = phone_number.startsWith("+") ? phone_number : `+${phone_number}`;
+
+    console.log(`Verifying OTP ${otp_code} for ${formattedPhone}`);
 
     // Find the most recent OTP for this phone number
     const { data: otpData, error: fetchError } = await supabase
       .from('otp_codes')
       .select('*')
-      .eq('phone_number', phone_number)
+      .eq('phone_number', formattedPhone)
       .eq('otp_code', otp_code)
       .eq('verified', false)
       .order('created_at', { ascending: false })
