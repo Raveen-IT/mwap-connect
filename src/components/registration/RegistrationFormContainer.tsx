@@ -4,8 +4,7 @@ import { User } from "@/types/user";
 import { RegistrationDetails } from "./RegistrationDetails";
 import { OTPVerification } from "./OTPVerification";
 import { RegistrationSuccess } from "./RegistrationSuccess";
-import { generateOTP } from "@/utils/id-generator";
-import { sendOtpSms } from "@/utils/sendOtpSms";
+import { sendOTP, verifyOTP } from "@/utils/otpService";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,36 +27,38 @@ export const RegistrationForm = () => {
     email: "",
   });
   
-  const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState("");
   const [userId, setUserId] = useState("");
 
   const handleDetailsSubmit = async (validatedFormData: Partial<User>) => {
     setFormData(validatedFormData);
     setLoading(true);
-    const newOtp = generateOTP();
-    setGeneratedOtp(newOtp);
-
-    // Send OTP using Fast2SMS
-    const result = await sendOtpSms(validatedFormData.mobile as string, newOtp);
-    if (result.success) {
-      toast.success("OTP sent to your mobile");
-      toast.info(`For testing, your OTP is: ${newOtp}`);
-      setStep('verification');
-    } else {
-      toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+    
+    try {
+      // Send OTP using Twilio via Edge Function
+      const result = await sendOTP(validatedFormData.mobile as string);
+      
+      if (result.success) {
+        toast.success("OTP sent to your mobile");
+        
+        // For testing - in production, don't show this
+        if (result.otp) {
+          setGeneratedOtp(result.otp);
+          toast.info(`For testing, your OTP is: ${result.otp}`);
+        }
+        
+        setStep('verification');
+      } else {
+        toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
+      }
+    } catch (error: any) {
+      toast.error(`Error: ${error.message || "Failed to send OTP"}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleVerificationSubmit = async (submittedOtp: string) => {
-    setOtp(submittedOtp);
-    
-    if (submittedOtp !== generatedOtp) {
-      toast.error("Invalid OTP. Please try again");
-      return;
-    }
-    
     setLoading(true);
     
     try {
@@ -115,18 +116,27 @@ export const RegistrationForm = () => {
 
   const handleResendOtp = async () => {
     setLoading(true);
-    const newOtp = generateOTP();
-    setGeneratedOtp(newOtp);
-
-    // Send OTP using Fast2SMS
-    const result = await sendOtpSms(formData.mobile as string, newOtp);
-    if (result.success) {
-      toast.success("OTP resent to your mobile");
-      toast.info(`For testing, your new OTP is: ${newOtp}`);
-    } else {
-      toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+    
+    try {
+      // Send OTP using Twilio via Edge Function
+      const result = await sendOTP(formData.mobile as string);
+      
+      if (result.success) {
+        toast.success("OTP resent to your mobile");
+        
+        // For testing - in production, don't show this
+        if (result.otp) {
+          setGeneratedOtp(result.otp);
+          toast.info(`For testing, your new OTP is: ${result.otp}`);
+        }
+      } else {
+        toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
+      }
+    } catch (error: any) {
+      toast.error(`Error: ${error.message || "Failed to resend OTP"}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGoToDashboard = () => {

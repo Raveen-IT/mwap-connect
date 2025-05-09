@@ -69,15 +69,18 @@ const Login = () => {
         }
       }
       
-      // Generate OTP
-      const newOtp = generateOTP();
-      setGeneratedOtp(newOtp);
-
-      // Send OTP using Fast2SMS integration
-      const result = await sendOtpSms(mobile, newOtp);
+      // Send OTP using Twilio via Edge Function
+      const result = await sendOTP(mobile);
+      
       if (result.success) {
         toast.success("OTP sent to your mobile");
-        toast.info(`For testing, your OTP is: ${newOtp}`);
+        
+        // For testing - in production, don't show this
+        if (result.otp) {
+          setGeneratedOtp(result.otp);
+          toast.info(`For testing, your OTP is: ${result.otp}`);
+        }
+        
         setStep('verification');
       } else {
         toast.error("Failed to send OTP: " + (result.error || "Unexpected error"));
@@ -92,21 +95,25 @@ const Login = () => {
 
   const handleResendOtp = async () => {
     setLoading(true);
-    const newOtp = generateOTP();
-    setGeneratedOtp(newOtp);
     
     try {
-      // Send OTP using Fast2SMS integration
-      const result = await sendOtpSms(mobile, newOtp);
+      // Send OTP using Twilio via Edge Function
+      const result = await sendOTP(mobile);
+      
       if (result.success) {
         toast.success("A new OTP has been sent to your mobile");
-        toast.info(`For testing, your new OTP is: ${newOtp}`);
+        
+        // For testing - in production, don't show this
+        if (result.otp) {
+          setGeneratedOtp(result.otp);
+          toast.info(`For testing, your new OTP is: ${result.otp}`);
+        }
       } else {
         toast.error("Failed to resend OTP: " + (result.error || "Unexpected error"));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error resending OTP:", error);
-      toast.error("Failed to resend OTP. Please try again.");
+      toast.error(`Error: ${error.message || "Failed to resend OTP"}`);
     } finally {
       setLoading(false);
     }
@@ -120,14 +127,18 @@ const Login = () => {
       return;
     }
     
-    if (otp !== generatedOtp) {
-      toast.error("Invalid OTP. Please try again");
-      return;
-    }
-    
     setLoading(true);
     
     try {
+      // Verify the OTP with our backend
+      const result = await verifyOTP(mobile, otp);
+      
+      if (!result.valid) {
+        toast.error(result.error || "Invalid OTP. Please try again");
+        setLoading(false);
+        return;
+      }
+      
       // First try to find the user in Supabase
       const { data: users, error } = await supabase
         .from('user_data')
