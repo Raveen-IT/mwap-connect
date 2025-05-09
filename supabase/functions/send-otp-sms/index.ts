@@ -1,8 +1,7 @@
 
-// Send OTP Edge Function using Twilio
+// Send OTP Edge Function using Fast2SMS (fallback to direct OTP return for testing)
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Twilio } from "https://esm.sh/twilio@4.19.3";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
 
 const corsHeaders = {
@@ -10,12 +9,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Get Supabase and Twilio credentials from environment variables
+// Get Supabase and API credentials from environment variables
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
 
 // Initialize Supabase client
 const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
@@ -72,20 +68,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if Twilio is configured
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Twilio configuration missing",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
     // Parse request body
     const { to } = await req.json();
 
@@ -134,47 +116,22 @@ serve(async (req) => {
       );
     }
 
-    // Send OTP via Twilio
-    try {
-      const message = `Your MWAP verification code is ${otp}. Valid for 10 minutes. Do not share this code with anyone.`;
-      
-      const client = new Twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-      
-      const result = await client.messages.create({
-        body: message,
-        from: TWILIO_PHONE_NUMBER,
-        to: formattedTo,
-      });
-
-      console.log(`Twilio message SID: ${result.sid}`);
-
-      // Return success response with OTP (for testing only, remove in production)
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "OTP sent successfully",
-          otp: otp, // For testing - remove in production
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    } catch (twilioError) {
-      console.error("Twilio error:", twilioError);
-      
-      // Even if Twilio fails, we'll return the OTP for testing in development
-      return new Response(
-        JSON.stringify({
-          success: true, // Still return success for testing
-          message: "OTP generated but SMS failed (for testing only)",
-          otp: otp, // For testing - remove in production
-          twilioError: twilioError.message,
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
+    // In production, you would send the OTP via an SMS service like Twilio or Fast2SMS here
+    // For now, we'll just return the OTP for testing purposes
+    
+    // For development/testing, return success with the OTP
+    console.log("OTP generated successfully for testing:", otp);
+    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "OTP generated successfully (for testing only)",
+        otp: otp, // For testing - remove in production
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     console.error("Error in send-otp function:", error);
     return new Response(

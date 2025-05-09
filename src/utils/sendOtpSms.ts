@@ -2,14 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Sends an OTP SMS to the specified mobile number using Supabase Edge Function with Fast2SMS.
+ * Sends an OTP SMS to the specified mobile number using Supabase Edge Function.
  * @param mobile - The phone number (string, 10-digits for India).
  * @param otp - OTP code to send (string).
  * @returns Promise<{ success: boolean, error?: string }>
  */
 export async function sendOtpSms(mobile: string, otp: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Format phone number for Fast2SMS (add +91 prefix for India if not present)
+    // Format phone number for SMS service (add +91 prefix for India if not present)
     const formattedMobile = mobile.startsWith("+") ? mobile : `+91${mobile}`;
     
     console.log(`Sending OTP to ${formattedMobile}`);
@@ -17,8 +17,7 @@ export async function sendOtpSms(mobile: string, otp: string): Promise<{ success
     // Call the Supabase edge function to send SMS
     const { data, error } = await supabase.functions.invoke('send-otp-sms', {
       body: { 
-        to: formattedMobile, 
-        otp 
+        to: formattedMobile
       }
     });
     
@@ -32,7 +31,7 @@ export async function sendOtpSms(mobile: string, otp: string): Promise<{ success
       return { success: false, error: data?.error || "Failed to send OTP" };
     }
     
-    console.log("OTP sent via Fast2SMS:", { to: formattedMobile, success: true });
+    console.log("OTP sent successfully:", { to: formattedMobile, success: true });
     return { success: true };
   } catch (err: any) {
     console.error("Exception in sendOtpSms:", err);

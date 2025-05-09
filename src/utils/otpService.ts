@@ -31,18 +31,30 @@ export const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Function to send OTP via Supabase Edge Function
-export const sendOTP = async (phoneNumber: string): Promise<{success: boolean, otp?: string, error?: string}> => {
+// Function to send OTP via Supabase Edge Function with retry mechanism
+export const sendOTP = async (phoneNumber: string, retryCount = 0): Promise<{success: boolean, otp?: string, error?: string}> => {
   try {
-    // Format phone number to E.164 format for Twilio
+    // Format phone number to E.164 format
     const formattedPhone = formatPhoneNumberE164(phoneNumber);
     
+    console.log(`Attempting to send OTP to ${formattedPhone}, attempt ${retryCount + 1}`);
+    
+    // Call the Supabase edge function to send SMS
     const { data, error } = await supabase.functions.invoke("send-otp-sms", {
       body: { to: formattedPhone }
     });
 
     if (error) {
-      console.error("Error sending OTP:", error);
+      console.error(`Error sending OTP (attempt ${retryCount + 1}):`, error);
+      
+      // Implement retry mechanism for network-related errors
+      if (retryCount < 2 && (error.message.includes("Failed to fetch") || error.message.includes("Network"))) {
+        console.log(`Retrying sendOTP... (${retryCount + 1}/2)`);
+        // Wait for 1 second before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return sendOTP(phoneNumber, retryCount + 1);
+      }
+      
       return { success: false, error: error.message };
     }
 
@@ -56,16 +68,27 @@ export const sendOTP = async (phoneNumber: string): Promise<{success: boolean, o
       error: undefined 
     };
   } catch (error: any) {
-    console.error("Exception sending OTP:", error);
+    console.error(`Exception sending OTP (attempt ${retryCount + 1}):`, error);
+    
+    // Retry on exceptions as well
+    if (retryCount < 2) {
+      console.log(`Retrying sendOTP after exception... (${retryCount + 1}/2)`);
+      // Wait for 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return sendOTP(phoneNumber, retryCount + 1);
+    }
+    
     return { success: false, error: error.message };
   }
 };
 
-// Function to verify OTP
-export const verifyOTP = async (phoneNumber: string, otpCode: string): Promise<{valid: boolean, error?: string}> => {
+// Function to verify OTP with retry mechanism
+export const verifyOTP = async (phoneNumber: string, otpCode: string, retryCount = 0): Promise<{valid: boolean, error?: string}> => {
   try {
-    // Format phone number to E.164 format for Twilio
+    // Format phone number to E.164 format
     const formattedPhone = formatPhoneNumberE164(phoneNumber);
+    
+    console.log(`Attempting to verify OTP for ${formattedPhone}, attempt ${retryCount + 1}`);
     
     const { data, error } = await supabase.functions.invoke("verify-otp", {
       body: { 
@@ -75,7 +98,16 @@ export const verifyOTP = async (phoneNumber: string, otpCode: string): Promise<{
     });
 
     if (error) {
-      console.error("Error verifying OTP:", error);
+      console.error(`Error verifying OTP (attempt ${retryCount + 1}):`, error);
+      
+      // Implement retry mechanism
+      if (retryCount < 2 && (error.message.includes("Failed to fetch") || error.message.includes("Network"))) {
+        console.log(`Retrying verifyOTP... (${retryCount + 1}/2)`);
+        // Wait for 1 second before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return verifyOTP(phoneNumber, otpCode, retryCount + 1);
+      }
+      
       return { valid: false, error: error.message };
     }
 
@@ -84,7 +116,16 @@ export const verifyOTP = async (phoneNumber: string, otpCode: string): Promise<{
       error: data.valid ? undefined : (data.error || "Invalid OTP code") 
     };
   } catch (error: any) {
-    console.error("Exception verifying OTP:", error);
+    console.error(`Exception verifying OTP (attempt ${retryCount + 1}):`, error);
+    
+    // Retry on exceptions as well
+    if (retryCount < 2) {
+      console.log(`Retrying verifyOTP after exception... (${retryCount + 1}/2)`);
+      // Wait for 1 second before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return verifyOTP(phoneNumber, otpCode, retryCount + 1);
+    }
+    
     return { valid: false, error: error.message };
   }
 };
