@@ -529,7 +529,7 @@ const Chatbot = () => {
                   </ScrollArea>
                   
                   {selectedCategory && !isMobile && (
-                    <div className="border-t p-4 mt-auto max-h-[30%] overflow-hidden">
+                    <div className="border-t p-4 mt-auto max-h-[30%] scroll">
                       <h3 className="font-medium mb-3 text-sm text-primary">
                         {selectedCategory === "rights" 
                           ? "Legal Rights & Protections" 
