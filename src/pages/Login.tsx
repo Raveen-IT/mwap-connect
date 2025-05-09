@@ -386,7 +386,7 @@ const Login = () => {
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             placeholder={t("login.otpPlaceholder")}
-                            maxLength={4}
+                            maxLength={6}
                             autoFocus
                             required
                           />
