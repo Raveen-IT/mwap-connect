@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -451,17 +452,21 @@ const Chatbot = () => {
                             )}
                             
                             <div
-                              className={`rounded-xl p-4 shadow-sm text-sm ${
+                              className={`rounded-xl p-4 shadow-sm ${
                                 message.sender === "user"
                                   ? "bg-primary text-primary-foreground rounded-tr-none"
                                   : "bg-secondary rounded-tl-none"
                               }`}
                             >
-                              {message.content.split("\n").map((text, i) => (
-                                <p key={i} className={i > 0 ? "mt-2" : ""}>
-                                  {text}
-                                </p>
-                              ))}
+                              <ScrollArea className={`${message.content.length > 200 ? "max-h-[200px]" : ""}`}>
+                                <div className="text-sm">
+                                  {message.content.split("\n").map((text, i) => (
+                                    <p key={i} className={i > 0 ? "mt-2" : ""}>
+                                      {text}
+                                    </p>
+                                  ))}
+                                </div>
+                              </ScrollArea>
                               <div className="text-xs mt-2 opacity-70 text-right">
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
