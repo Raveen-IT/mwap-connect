@@ -1,56 +1,26 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Info, MessageSquare, HelpCircle, AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { getCurrentUser } from "@/utils/storage";
 import { User } from "@/types/user";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useLanguage } from "@/context/LanguageContext";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info, MessageSquare, HelpCircle, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguage } from "@/context/LanguageContext";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "bot";
-  timestamp: Date;
-}
-
-interface SchemeCategory {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  schemes: Scheme[];
-}
-
-interface Scheme {
-  name: string;
-  description: string;
-  eligibility: string;
-  benefits: string;
-}
-
-interface StateScheme {
-  name: string;
-  description: string;
-  benefits: string;
-}
+// Import refactored components
+import MessageList from "@/components/chatbot/MessageList";
+import CategorySelector from "@/components/chatbot/CategorySelector";
+import SchemesList from "@/components/chatbot/SchemesList";
+import ChatInput from "@/components/chatbot/ChatInput";
+import { Message, SchemeCategory, Scheme, StateScheme } from "@/components/chatbot/types";
 
 const Chatbot = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [user, setUser] = useState<User | null>(null);
-  const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -221,76 +191,6 @@ const Chatbot = () => {
     "Employees' Provident Fund: Retirement benefit scheme for organized sector workers."
   ];
   
-  const getBotResponse = (question: string): string => {
-    const lowercaseQuestion = question.toLowerCase();
-    
-    if (lowercaseQuestion.includes("hello") || lowercaseQuestion.includes("hi")) {
-      return `Hello${user ? ` ${user.name}` : ""}! How can I help you today? You can ask me about government schemes, benefits, or rights for migrant workers across India.`;
-    }
-    
-    for (const state in stateSchemes) {
-      if (lowercaseQuestion.includes(state)) {
-        const stateSpecificSchemes = stateSchemes[state as keyof typeof stateSchemes];
-        return `Here are some specific schemes for migrant workers in ${state.charAt(0).toUpperCase() + state.slice(1)}:\n\n${stateSpecificSchemes.map(scheme => `• ${scheme.name}: ${scheme.description}\n  Benefits: ${scheme.benefits}`).join("\n\n")}`;
-      }
-    }
-    
-    if (
-      lowercaseQuestion.includes("right") || 
-      lowercaseQuestion.includes("legal") || 
-      lowercaseQuestion.includes("protection") ||
-      lowercaseQuestion.includes("law")
-    ) {
-      return `Migrant workers in India have several legal rights and protections:\n\n${rights.map(right => `• ${right}`).join("\n\n")}`;
-    }
-    
-    if (
-      lowercaseQuestion.includes("scheme") || 
-      lowercaseQuestion.includes("benefit") || 
-      lowercaseQuestion.includes("welfare") ||
-      lowercaseQuestion.includes("help") ||
-      lowercaseQuestion.includes("support")
-    ) {
-      let matchedScheme: Scheme | undefined;
-      
-      for (const category of schemeCategories) {
-        const found = category.schemes.find(scheme => 
-          lowercaseQuestion.includes(scheme.name.toLowerCase()) ||
-          scheme.description.toLowerCase().split(" ").some(word => lowercaseQuestion.includes(word))
-        );
-        
-        if (found) {
-          matchedScheme = found;
-          break;
-        }
-      }
-      
-      if (matchedScheme) {
-        return `${matchedScheme.name}: ${matchedScheme.description}\n\nEligibility: ${matchedScheme.eligibility}\n\nBenefits: ${matchedScheme.benefits}`;
-      } else {
-        return "I can provide information on various schemes and benefits for migrant workers. Please select a category from the options below or ask about a specific scheme.";
-      }
-    }
-    
-    if (lowercaseQuestion.includes("eligible") || lowercaseQuestion.includes("eligibility") || lowercaseQuestion.includes("qualify")) {
-      return "Eligibility varies by scheme. Most schemes require proper identification documents like Aadhaar card, voter ID, or ration card. Some schemes are specific to certain types of work like construction or agriculture. Would you like information about a specific scheme?";
-    }
-    
-    if (lowercaseQuestion.includes("register") || lowercaseQuestion.includes("registration") || lowercaseQuestion.includes("sign up")) {
-      return "Registration processes for various schemes differ by state and scheme type. For most welfare schemes, you need to visit the nearest Labor Welfare Office or Common Service Center with your ID proof, address proof, and work certificate. For construction workers, registration with the state Construction Workers Welfare Board is required. Many states now offer online registration facilities as well.";
-    }
-    
-    if (lowercaseQuestion.includes("amount") || lowercaseQuestion.includes("money") || lowercaseQuestion.includes("fund") || lowercaseQuestion.includes("payment")) {
-      return "Benefit amounts vary by scheme. For example:\n\n• PM-SYM provides a monthly pension of ₹3,000 after retirement\n• Construction Workers Welfare Schemes offer accident coverage up to ₹5 lakhs\n• Ayushman Bharat provides health coverage of ₹5 lakhs per family per year\n• Education scholarships for workers' children range from ₹1,000 to ₹25,000 depending on the state and education level";
-    }
-    
-    if (lowercaseQuestion.includes("document") || lowercaseQuestion.includes("id") || lowercaseQuestion.includes("aadhaar") || lowercaseQuestion.includes("identification")) {
-      return "Important documents for migrant workers include:\n\n• Aadhaar Card (essential for most schemes)\n• Voter ID\n• Ration Card (important for PDS benefits)\n• Bank Account (for direct benefit transfers)\n• Labor Card/Construction Worker Registration (for specific welfare schemes)\n• Domicile Certificate (for state-specific benefits)\n\nIf you need assistance with documentation, many states have migrant resource centers that can help.";
-    }
-    
-    return "I don't have specific information about that. Please select one of the benefit categories below or ask about government schemes for migrant workers across India, your legal rights, or how to access specific benefits.";
-  };
-
   const handleSchemeSelect = (scheme: Scheme) => {
     const botResponse: Message = {
       id: Date.now().toString(),
@@ -301,15 +201,6 @@ const Chatbot = () => {
     
     setMessages(prev => [...prev, botResponse]);
   };
-  
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      // Use setTimeout to ensure the DOM has updated
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
-  }, [messages]);
   
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -328,9 +219,7 @@ const Chatbot = () => {
     }
   }, []);
   
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSendMessage = async (input: string) => {
     if (!input.trim()) return;
     
     const userMessage: Message = {
@@ -341,7 +230,6 @@ const Chatbot = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setInput("");
     setIsLoading(true);
     
     try {
@@ -406,202 +294,44 @@ const Chatbot = () => {
             </CardHeader>
             
             <div className="grid grid-cols-1 md:grid-cols-4 h-[calc(100vh-16rem)] max-h-[600px]">
-              <div className="border-r hidden md:block bg-background/50">
-                <div className="p-4 h-full">
-                  <h3 className="font-semibold mb-4 text-sm text-primary">Select a Category</h3>
-                  <RadioGroup value={selectedCategory || ""} onValueChange={setSelectedCategory} className="space-y-3">
-                    {schemeCategories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={category.id} id={category.id} />
-                        <label htmlFor={category.id} className="flex items-center cursor-pointer">
-                          {category.icon}
-                          <span className="ml-2 text-sm">{category.name}</span>
-                        </label>
-                      </div>
-                    ))}
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="rights" id="rights" />
-                      <label htmlFor="rights" className="flex items-center cursor-pointer">
-                        <Info className="h-5 w-5 text-red-500" />
-                        <span className="ml-2 text-sm">Legal Rights</span>
-                      </label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </div>
+              <CategorySelector
+                categories={schemeCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                onSchemeSelect={handleSchemeSelect}
+                rights={rights}
+              />
               
               <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-full bg-background`}>
                 <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-                  <ScrollArea 
-                    className="flex-1 p-4 overflow-y-auto" 
-                    ref={scrollAreaRef}
-                  >
-                    <div className="space-y-4 py-2 pb-6">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-fade-in`}
-                        >
-                          <div className={`flex gap-3 max-w-[85%] ${message.sender === "user" ? "flex-row-reverse" : ""}`}>
-                            {message.sender === "bot" && (
-                              <Avatar className="h-8 w-8 flex-shrink-0">
-                                <AvatarFallback className="bg-primary text-primary-foreground">
-                                  M
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                            
-                            <div
-                              className={`rounded-xl p-4 shadow-sm ${
-                                message.sender === "user"
-                                  ? "bg-primary text-primary-foreground rounded-tr-none"
-                                  : "bg-secondary rounded-tl-none"
-                              }`}
-                            >
-                              <ScrollArea className={`${message.content.length > 200 ? "max-h-[200px]" : ""}`}>
-                                <div className="text-sm">
-                                  {message.content.split("\n").map((text, i) => (
-                                    <p key={i} className={i > 0 ? "mt-2" : ""}>
-                                      {text}
-                                    </p>
-                                  ))}
-                                </div>
-                              </ScrollArea>
-                              <div className="text-xs mt-2 opacity-70 text-right">
-                                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </div>
-                            </div>
-                            
-                            {message.sender === "user" && user && (
-                              <Avatar className="h-8 w-8 flex-shrink-0">
-                                <AvatarFallback className="bg-accent text-accent-foreground">
-                                  {user.name.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {isLoading && (
-                        <div className="flex justify-start animate-fade-in">
-                          <div className="flex gap-3 max-w-[85%]">
-                            <Avatar className="h-8 w-8 flex-shrink-0">
-                              <AvatarFallback className="bg-primary text-primary-foreground">
-                                M
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="rounded-xl rounded-tl-none p-4 text-sm bg-secondary shadow-sm">
-                              <span className="flex gap-1">
-                                <span className="animate-pulse">●</span>
-                                <span className="animate-pulse animation-delay-100">●</span>
-                                <span className="animate-pulse animation-delay-200">●</span>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {messages.length <= 2 && !isLoading && (
-                        <div className="flex md:hidden flex-col space-y-4 py-4">
-                          <div className="font-medium text-center">Explore Benefits by Category</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {schemeCategories.map((category) => (
-                              <Button
-                                key={category.id}
-                                variant="outline"
-                                className="flex flex-col h-20 items-center justify-center text-xs p-2 text-center"
-                                onClick={() => setSelectedCategory(category.id)}
-                              >
-                                {category.icon}
-                                <span className="mt-2">{category.name}</span>
-                              </Button>
-                            ))}
-                            <Button
-                              variant="outline"
-                              className="flex flex-col h-20 items-center justify-center text-xs p-2 text-center"
-                              onClick={() => setSelectedCategory("rights")}
-                            >
-                              <Info className="h-5 w-5 text-red-500" />
-                              <span className="mt-2">Legal Rights</span>
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div ref={messagesEndRef} className="h-0" />
-                    </div>
-                  </ScrollArea>
+                  <MessageList
+                    messages={messages}
+                    isLoading={isLoading}
+                    user={user}
+                    schemeCategories={schemeCategories}
+                    setSelectedCategory={setSelectedCategory}
+                    messagesEndRef={messagesEndRef}
+                    scrollAreaRef={scrollAreaRef}
+                    isMobile={isMobile}
+                  />
                   
-                  {selectedCategory && !isMobile && (
-                    <div className="border-t p-4 mt-auto max-h-[30%] scroll">
-                      <h3 className="font-medium mb-3 text-sm text-primary">
-                        {selectedCategory === "rights" 
-                          ? "Legal Rights & Protections" 
-                          : schemeCategories.find(cat => cat.id === selectedCategory)?.name || ""}
-                      </h3>
-                      <ScrollArea className="h-36">
-                        {selectedCategory === "rights" ? (
-                          <div className="space-y-2">
-                            {rights.map((right, index) => (
-                              <div 
-                                key={index} 
-                                className="p-2 border rounded-lg hover:bg-muted transition-colors cursor-pointer hover:shadow-sm" 
-                                onClick={() => {
-                                  setMessages(prev => [...prev, {
-                                    id: Date.now().toString(),
-                                    content: right,
-                                    sender: "bot",
-                                    timestamp: new Date()
-                                  }]);
-                                }}
-                              >
-                                {right.split(':')[0]}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {schemeCategories
-                              .find(cat => cat.id === selectedCategory)
-                              ?.schemes.map((scheme, index) => (
-                                <div 
-                                  key={index}
-                                  className="p-2 border rounded-lg hover:bg-muted transition-colors cursor-pointer hover:shadow-sm"
-                                  onClick={() => handleSchemeSelect(scheme)}
-                                >
-                                  <div className="font-medium">{scheme.name}</div>
-                                  <div className="text-xs text-muted-foreground line-clamp-1">{scheme.description}</div>
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                      </ScrollArea>
-                    </div>
-                  )}
+                  <SchemesList
+                    selectedCategory={selectedCategory}
+                    schemeCategories={schemeCategories}
+                    rights={rights}
+                    handleSchemeSelect={handleSchemeSelect}
+                    setMessages={setMessages}
+                    isMobile={isMobile}
+                  />
                 </CardContent>
               </div>
             </div>
             
             <CardFooter className="p-4 border-t bg-muted/30 flex-shrink-0">
-              <form onSubmit={handleSendMessage} className="flex w-full gap-2 relative">
-                <Input
-                  placeholder={t("chatbot.messagePlaceholder")}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={isLoading}
-                  className="flex-1 pr-10 h-12 rounded-full pl-5 shadow-sm border-muted"
-                  autoComplete="off"
-                />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={isLoading || !input.trim()}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </form>
+              <ChatInput 
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+              />
             </CardFooter>
           </Card>
         </div>
