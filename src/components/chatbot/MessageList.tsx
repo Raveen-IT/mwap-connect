@@ -5,20 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import { User } from "@/types/user";
-
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "bot";
-  timestamp: Date;
-}
-
-interface SchemeCategory {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  schemes: any[];
-}
+import { Message, SchemeCategory } from "./types";
 
 interface MessageListProps {
   messages: Message[];
