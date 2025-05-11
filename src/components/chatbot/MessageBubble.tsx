@@ -31,7 +31,7 @@ const MessageBubble = ({ content, sender, timestamp, user }: MessageBubbleProps)
               : "bg-secondary rounded-tl-none"
           }`}
         >
-          <ScrollArea className={`${content.length > 200 ? "max-h-[200px]" : ""}`}>
+          <ScrollArea className={`${content.length > 200 ? "max-h-[200px]" : ""}`} type="hover">
             <div className="text-sm">
               {content.split("\n").map((text, i) => (
                 <p key={i} className={i > 0 ? "mt-2" : ""}>

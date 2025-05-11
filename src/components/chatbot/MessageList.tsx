@@ -6,6 +6,7 @@ import { Info } from "lucide-react";
 import MessageBubble from "./MessageBubble";
 import { User } from "@/types/user";
 import { Message, SchemeCategory } from "./types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface MessageListProps {
   messages: Message[];
@@ -41,8 +42,9 @@ const MessageList = ({
     <ScrollArea 
       className="flex-1 p-4 overflow-y-auto" 
       viewportRef={scrollAreaRef}
+      type="always"
     >
-      <div className="space-y-4 py-2 pb-6">
+      <div className="space-y-4 py-2 pb-6 pr-4">
         {messages.map((message) => (
           <MessageBubble 
             key={message.id}
@@ -102,8 +104,5 @@ const MessageList = ({
     </ScrollArea>
   );
 };
-
-// Fix missing import
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default MessageList;
