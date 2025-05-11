@@ -303,7 +303,7 @@ const Chatbot = () => {
               />
               
               <div className={`${selectedCategory ? "col-span-3" : "col-span-4"} flex flex-col h-full bg-background`}>
-                <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
+                <CardContent className="flex-1 p-0 overflow-auto flex flex-col">
                   <MessageList
                     messages={messages}
                     isLoading={isLoading}
