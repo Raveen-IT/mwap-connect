@@ -281,7 +281,7 @@ const Chatbot = () => {
     <Layout>
       <section className="section-container py-8 flex justify-center items-center min-h-[calc(100vh-10rem)]">
         <div className="w-full max-w-4xl mx-auto">
-          <Card className="border shadow-lg overflow-hidden">
+          <Card className="border shadow-lg overflow-auto">
             <CardHeader className="border-b bg-muted/30 py-4">
               <div className="flex justify-between items-center">
                 <div>
