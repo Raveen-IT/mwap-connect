@@ -230,10 +230,10 @@ export const RegistrationDetails = ({ formData: initialFormData, loading, onSubm
               name="mobile"
               value={formData.mobile}
               onChange={handleMobileChange}
-              placeholder="10-digit mobile number"
+              placeholder="Enter +91 before 10-digit mobile number"
               required
               className="rounded-l-none"
-              maxLength={10}
+              maxLength={14}
               inputMode="numeric"
               pattern="[0-9]{10}"
               title="Please enter exactly 10 digits"
