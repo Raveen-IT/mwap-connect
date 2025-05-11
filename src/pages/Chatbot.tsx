@@ -326,14 +326,13 @@ const Chatbot = () => {
                 </CardContent>
               </div>
             </div>
-            
-            <CardFooter className="p-4 border-t bg-muted/30 flex-shrink-0">
+          </Card>
+          <CardFooter className="p-4 border-t bg-muted/30 flex-shrink-0">
               <ChatInput 
                 onSendMessage={handleSendMessage}
                 isLoading={isLoading}
               />
             </CardFooter>
-          </Card>
         </div>
       </section>
     </Layout>
